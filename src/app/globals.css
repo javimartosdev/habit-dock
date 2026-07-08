@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+.light {
+  --background: #f6f6f7;
+  --foreground: #18181b;
+  --muted: #71717a;
+  --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-hover: #f0f0f2;
+  --border: #e4e4e7;
+  --accent: #4f46e5;
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+}
+
+.dark {
+  --background: #0a0a0b;
+  --foreground: #fafafa;
+  --muted: #71717a;
+  --surface: #111113;
+  --surface-elevated: #18181b;
+  --surface-hover: #1f1f23;
+  --border: #27272a;
+  --accent: #6366f1;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* ── Skeuomorphic calendar ── */
+.calendar-paper {
+  background: linear-gradient(165deg, #f4efe6 0%, #e8e0d4 50%, #ddd4c8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.calendar-title {
+  color: #2c2825;
+}
+
+.calendar-subtitle {
+  color: #6b6560;
+}
+
+.calendar-weekday {
+  color: #8a837c;
+}
+
+.calendar-nav-btn {
+  color: #5c5650 !important;
+}
+
+.calendar-nav-btn:hover {
+  background: rgba(0, 0, 0, 0.06) !important;
+}
+
+.calendar-day {
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8);
+  color: #3d3a36;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.calendar-day-inactive {
+  background: transparent;
+  box-shadow: none;
+  color: #b8b0a8;
+}
+
+.calendar-day-pending {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.calendar-day-partial {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: inset 0 0 12px rgba(99, 102, 241, 0.08);
+}
+
+.calendar-day-optimal {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #166534;
+}
+
+.calendar-day-optimal .cross-line,
+.calendar-day-optimal line {
+  stroke: #15803d;
+}
+
+.calendar-day-recovered {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(34, 197, 94, 0.15);
+}
+
+.calendar-day-recovered line {
+  stroke: #22c55e;
+  opacity: 0.5;
+  stroke-dasharray: 4 3;
+}
+
+.calendar-day-missed {
+  background: rgba(239, 68, 68, 0.06);
+  color: #9ca3af;
+}
+
+.calendar-day-missed line {
+  stroke: #d1d5db;
+  opacity: 0.6;
+}
+
+.calendar-day-today {
+  box-shadow:
+    inset 0 0 0 2px rgba(99, 102, 241, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.calendar-day-selected {
+  box-shadow:
+    inset 0 0 0 2px rgba(99, 102, 241, 0.85),
+    0 0 0 2px rgba(99, 102, 241, 0.35);
+}
+
+.calendar-week-perfect {
+  background: linear-gradient(
+    90deg,
+    rgba(245, 158, 11, 0.14),
+    rgba(251, 191, 36, 0.1),
+    rgba(245, 158, 11, 0.14)
+  );
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.28);
+}
+
+@keyframes cross-off {
+  from {
+    stroke-dashoffset: 40;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes day-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-cross-off {
+  stroke-dasharray: 40;
+  animation: cross-off 0.45s ease-out forwards;
+}
+
+.cross-line {
+  stroke-dasharray: 40;
+}
+
+.animate-day-pop {
+  animation: day-pop 0.45s ease-out;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
