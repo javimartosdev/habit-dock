@@ -40,3 +40,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE / internal docs (never push)
+.cursor/
+.cursorrules
+AGENTS.md
+CLAUDE.md
+PROJECT_CONTEXT.md

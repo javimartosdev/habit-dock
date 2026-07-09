@@ -2,8 +2,6 @@
 
 Tu suite de enfoque personal: tareas, hábitos con calendario Seinfeld y estadísticas.
 
-> **Documentación completa para IAs y desarrolladores:** ver [`PROJECT_CONTEXT.md`](./PROJECT_CONTEXT.md)
-
 ## Requisitos
 
 - Node.js 20+
@@ -12,8 +10,9 @@ Tu suite de enfoque personal: tareas, hábitos con calendario Seinfeld y estadí
 ## Arranque rápido
 
 ```bash
-# 1. Base de datos
-docker compose up -d
+# 1. Base de datos (contenedor Docker)
+docker start study-dock-db
+# Si no existe aún: docker compose up -d  (requiere plugin compose)
 
 # 2. Variables de entorno
 cp .env.example .env.local
@@ -24,6 +23,8 @@ npm run db:push
 
 # 4. Desarrollo
 npm run dev
+# O todo en uno (BD + servidor):
+npm run dev:up
 ```
 
 Abre [http://localhost:3000](http://localhost:3000), crea una cuenta y empieza.
