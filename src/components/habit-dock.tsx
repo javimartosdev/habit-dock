@@ -31,6 +31,7 @@ interface TaskRow {
   title: string;
   contextName: string | null;
   contextColor: string | null;
+  completedAt: string | Date | null;
 }
 
 interface Context {
@@ -79,8 +80,13 @@ export function HabitDock({
     return m;
   }, [logsByHabit]);
 
-  const visibleTasks = tasksExpanded ? tasks : tasks.slice(0, TASKS_VISIBLE);
-  const hiddenCount = Math.max(0, tasks.length - TASKS_VISIBLE);
+  const pendingTasks = tasks.filter((t) => !t.completedAt);
+  const completedTasks = tasks.filter((t) => t.completedAt);
+  const visiblePending = tasksExpanded
+    ? pendingTasks
+    : pendingTasks.slice(0, TASKS_VISIBLE);
+  const visibleTasks = [...visiblePending, ...completedTasks];
+  const hiddenCount = Math.max(0, pendingTasks.length - TASKS_VISIBLE);
 
   function toggleDay(dow: number) {
     setScheduleDays((prev) =>
@@ -166,11 +172,12 @@ export function HabitDock({
     router.refresh();
   }
 
-  async function completeTask(id: string) {
-    await fetch(`/api/tasks/${id}`, {
+  async function toggleTask(task: TaskRow) {
+    const action = task.completedAt ? "reopen" : "complete";
+    await fetch(`/api/tasks/${task.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "complete" }),
+      body: JSON.stringify({ action }),
     });
     router.refresh();
   }
@@ -429,26 +436,50 @@ export function HabitDock({
           <p className="text-sm text-muted/70">Nada pendiente</p>
         ) : (
           <ul className="space-y-1">
-            {visibleTasks.map((task) => (
-              <li
-                key={task.id}
-                className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-surface-hover/50 transition-colors"
-              >
-                <button
-                  onClick={() => completeTask(task.id)}
-                  className="h-4 w-4 shrink-0 rounded border border-border/80 hover:border-success hover:bg-success/10"
-                />
-                <span className="flex-1 text-sm">{task.title}</span>
-                {task.contextName && (
-                  <span
-                    className="text-[10px] font-medium opacity-70"
-                    style={{ color: task.contextColor ?? undefined }}
+            {visibleTasks.map((task) => {
+              const isCompleted = !!task.completedAt;
+              return (
+                <li
+                  key={task.id}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-2 py-2 transition-colors",
+                    !isCompleted && "hover:bg-surface-hover/50",
+                  )}
+                >
+                  <button
+                    onClick={() => toggleTask(task)}
+                    className={cn(
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
+                      isCompleted
+                        ? "border-success bg-success text-white shadow-sm"
+                        : "border-muted/60 bg-muted/10 hover:border-success hover:bg-success/15",
+                    )}
+                    aria-label={isCompleted ? "Reabrir tarea" : "Completar tarea"}
                   >
-                    {task.contextName}
+                    {isCompleted && <Check className="h-3 w-3 stroke-[3]" />}
+                  </button>
+                  <span
+                    className={cn(
+                      "flex-1 text-sm",
+                      isCompleted && "text-muted/80 line-through",
+                    )}
+                  >
+                    {task.title}
                   </span>
-                )}
-              </li>
-            ))}
+                  {task.contextName && (
+                    <span
+                      className={cn(
+                        "text-[10px] font-medium opacity-70",
+                        isCompleted && "line-through",
+                      )}
+                      style={{ color: task.contextColor ?? undefined }}
+                    >
+                      {task.contextName}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
 
@@ -461,7 +492,7 @@ export function HabitDock({
             Ver {hiddenCount} más
           </button>
         )}
-        {tasksExpanded && tasks.length > TASKS_VISIBLE && (
+        {tasksExpanded && pendingTasks.length > TASKS_VISIBLE && (
           <button
             onClick={() => setTasksExpanded(false)}
             className="flex items-center gap-1 text-xs text-muted hover:text-foreground"

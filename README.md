@@ -10,6 +10,8 @@ Tu suite de enfoque personal: tareas, hábitos con calendario Seinfeld y estadí
 ## Arranque rápido
 
 ```bash
+cd ~/Projects/01_habit-dock
+
 # 1. Base de datos (contenedor Docker)
 docker start study-dock-db
 # Si no existe aún: docker compose up -d  (requiere plugin compose)
@@ -45,7 +47,8 @@ Abre [http://localhost:3000](http://localhost:3000), crea una cuenta y empieza.
 
 | Comando | Descripción |
 |---------|-------------|
-| `npm run dev` | Servidor de desarrollo |
+| `npm run dev` | Servidor de desarrollo (Webpack, estable) |
+| `npm run dev:turbo` | Servidor con Turbopack (experimental) |
 | `npm run db:push` | Sincronizar esquema con Postgres |
 | `npm run db:studio` | UI para explorar la BD |
 
@@ -55,6 +58,10 @@ Next.js 16 · TypeScript · Drizzle · PostgreSQL · NextAuth · Tailwind CSS
 
 ## Próximos pasos (cloud)
 
-1. Desplegar en Vercel
-2. Postgres en Neon o Supabase
-3. Cambiar `DATABASE_URL` y `AUTH_URL` en producción
+Ver **[DEPLOY.md](./DEPLOY.md)** — guía paso a paso Neon + Vercel + PWA en iPhone.
+
+Resumen:
+
+1. Crear Postgres en Neon y ejecutar `npm run db:push`
+2. Deploy en Vercel con `DATABASE_URL`, `AUTH_SECRET`, `AUTH_URL`
+3. Instalar en iPhone vía Safari → `/install`

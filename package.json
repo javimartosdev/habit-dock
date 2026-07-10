@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
+    "dev:turbo": "next dev",
+    "dev:clean": "rm -rf .next && npm run dev:up",
+    "db:up": "docker start study-dock-db",
+    "dev:up": "npm run db:up && npm run dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "icons:generate": "bash scripts/generate-icons.sh"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

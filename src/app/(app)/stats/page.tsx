@@ -1,11 +1,7 @@
 import { eachDayOfInterval, subDays } from "date-fns";
-import { Card } from "@/components/ui";
-import { StreakBadge } from "@/components/habit-calendar";
-import {
-  computeStreak,
-  isPerfectDay,
-  type HabitSchedule,
-} from "@/lib/habits";
+import { Card } from "@/components/card";
+import { StreakBadge } from "@/components/streak-badge";
+import { computeStreak } from "@/lib/habits";
 import {
   getHabitLogsMap,
   getUserHabits,
@@ -13,6 +9,50 @@ import {
 } from "@/lib/data";
 import { getSessionUser } from "@/lib/session";
 import { formatDateKey } from "@/lib/utils";
+
+function normalizeLogDate(value: string | Date): string {
+  if (value instanceof Date) return formatDateKey(value);
+  return value.slice(0, 10);
+}
+
+function countPerfectDays(
+  habits: Awaited<ReturnType<typeof getUserHabits>>,
+  logsMap: Awaited<ReturnType<typeof getHabitLogsMap>>,
+  days: Date[],
+): number {
+  let perfectDays = 0;
+
+  for (const day of days) {
+    const dayKey = formatDateKey(day);
+    if (day > new Date()) continue;
+
+    const activeHabits = habits.filter((habit) =>
+      habit.scheduleDays.includes(day.getDay()),
+    );
+    if (activeHabits.length === 0) continue;
+
+    const allSuccessful = activeHabits.every((habit) => {
+      const logs = (logsMap.get(habit.id) ?? []).map((log) => ({
+        ...log,
+        logDate: normalizeLogDate(log.logDate),
+      }));
+
+      if (habit.kind === "weekly_quota" && habit.weeklyTarget) {
+        return logs.some(
+          (log) => log.logDate === dayKey && log.completed,
+        );
+      }
+
+      return logs.some(
+        (log) => log.logDate === dayKey && log.completed,
+      );
+    });
+
+    if (allSuccessful) perfectDays++;
+  }
+
+  return perfectDays;
+}
 
 export default async function StatsPage() {
   const user = await getSessionUser();
@@ -28,35 +68,7 @@ export default async function StatsPage() {
     end: today,
   });
 
-  const habitSchedules: HabitSchedule[] = userHabits.map((h) => ({
-    kind: h.kind,
-    scheduleDays: h.scheduleDays,
-    weeklyTarget: h.weeklyTarget,
-  }));
-
-  const logsByHabitForPerfect = new Map<
-    string,
-    { logDate: string; completed: boolean }[]
-  >();
-  userHabits.forEach((h, i) => {
-    logsByHabitForPerfect.set(
-      JSON.stringify(habitSchedules[i]),
-      logsMap.get(h.id) ?? [],
-    );
-  });
-
-  let perfectDays = 0;
-  for (const day of last30) {
-    if (
-      isPerfectDay(
-        day,
-        habitSchedules,
-        logsByHabitForPerfect,
-      )
-    ) {
-      perfectDays++;
-    }
-  }
+  const perfectDays = countPerfectDays(userHabits, logsMap, last30);
 
   return (
     <div className="space-y-8">
@@ -90,16 +102,20 @@ export default async function StatsPage() {
         <h2 className="text-lg font-medium">Rachas por hábito</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {userHabits.map((habit) => {
+            const logs = (logsMap.get(habit.id) ?? []).map((log) => ({
+              ...log,
+              logDate: normalizeLogDate(log.logDate),
+            }));
+
             const streak = computeStreak(
               {
                 kind: habit.kind,
                 scheduleDays: habit.scheduleDays,
                 weeklyTarget: habit.weeklyTarget,
               },
-              logsMap.get(habit.id) ?? [],
+              logs,
             );
 
-            const logs = logsMap.get(habit.id) ?? [];
             const last30Active = last30.filter((d) =>
               habit.scheduleDays.includes(d.getDay()),
             );

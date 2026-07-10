@@ -25,7 +25,7 @@ export default async function HomePage() {
 
   const [habitsToday, tasks, contexts] = await Promise.all([
     getTodayHabitsWithStatus(user.id),
-    getUserTasks(user.id),
+    getUserTasks(user.id, null, { includeCompleted: true }),
     getUserContexts(user.id),
   ]);
 

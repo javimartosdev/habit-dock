@@ -85,6 +85,11 @@ function LoginForm() {
           Crear cuenta
         </Link>
       </p>
+      <p className="mt-3 text-center text-sm text-muted">
+        <Link href="/install" className="text-accent hover:underline">
+          Instalar en iPhone
+        </Link>
+      </p>
     </Card>
   );
 }

@@ -19,7 +19,7 @@ export function AppShell({
 
   return (
     <div className="min-h-full flex flex-col bg-background">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex h-12 max-w-2xl items-center justify-between px-4">
           <div className="flex items-center gap-2.5">
             {isStats ? (

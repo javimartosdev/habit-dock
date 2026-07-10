@@ -5,7 +5,8 @@ import { FormEvent, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { addMonths, subMonths } from "date-fns";
 import { Button, Card, Input } from "@/components/ui";
-import { HabitCalendar, StreakBadge } from "@/components/habit-calendar";
+import { HabitCalendar } from "@/components/habit-calendar";
+import { StreakBadge } from "@/components/streak-badge";
 import {
   buildMonthCalendar,
   computeStreak,

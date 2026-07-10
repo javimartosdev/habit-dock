@@ -3,6 +3,8 @@
 import { cn } from "@/lib/utils";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
+export { Card } from "@/components/card";
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg";
@@ -48,21 +50,3 @@ export function Input({
   );
 }
 
-export function Card({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border bg-surface-elevated/80 backdrop-blur-sm",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
-}

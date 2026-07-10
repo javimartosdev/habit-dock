@@ -31,7 +31,7 @@ export function BrandLogo({
           alt=""
           width={36}
           height={36}
-          className="rounded-[10px] shrink-0 shadow-sm shadow-black/20"
+          className="rounded-[10px] shrink-0 shadow-sm shadow-[#8F3B20]/25"
           priority
           aria-hidden
         />
@@ -54,7 +54,7 @@ export function BrandLogo({
         alt=""
         width={72}
         height={72}
-        className="rounded-2xl shadow-lg shadow-black/25"
+        className="rounded-2xl shadow-lg shadow-[#8F3B20]/30"
         priority
         aria-hidden
       />

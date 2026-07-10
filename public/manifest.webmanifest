@@ -1,11 +1,14 @@
 {
+  "id": "/",
   "name": "Habit Dock",
   "short_name": "Habit Dock",
-  "description": "Tu suite de enfoque personal",
+  "description": "Tu suite de enfoque personal: hábitos, tareas y estadísticas",
+  "lang": "es",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#2E3D8F",
-  "theme_color": "#2E3D8F",
+  "background_color": "#8F3B20",
+  "theme_color": "#8F3B20",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -18,13 +21,19 @@
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

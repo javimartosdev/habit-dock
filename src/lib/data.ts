@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lte, or } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   contexts,
@@ -18,8 +18,16 @@ export async function getUserContexts(userId: string) {
     .orderBy(asc(contexts.sortOrder));
 }
 
-export async function getUserTasks(userId: string, contextId?: string | null) {
-  const conditions = [eq(tasks.userId, userId), isNull(tasks.completedAt)];
+export async function getUserTasks(
+  userId: string,
+  contextId?: string | null,
+  options?: { includeCompleted?: boolean },
+) {
+  const conditions = [eq(tasks.userId, userId)];
+
+  if (!options?.includeCompleted) {
+    conditions.push(isNull(tasks.completedAt));
+  }
 
   if (contextId) {
     conditions.push(eq(tasks.contextId, contextId));
@@ -35,11 +43,18 @@ export async function getUserTasks(userId: string, contextId?: string | null) {
       contextName: contexts.name,
       contextColor: contexts.color,
       createdAt: tasks.createdAt,
+      completedAt: tasks.completedAt,
     })
     .from(tasks)
     .leftJoin(contexts, eq(tasks.contextId, contexts.id))
     .where(and(...conditions))
-    .orderBy(desc(tasks.priority), asc(tasks.dueDate), desc(tasks.createdAt));
+    .orderBy(
+      sql`case when ${tasks.completedAt} is null then 0 else 1 end`,
+      desc(tasks.priority),
+      asc(tasks.dueDate),
+      asc(tasks.completedAt),
+      desc(tasks.createdAt),
+    );
 }
 
 export async function getUserHabits(userId: string) {

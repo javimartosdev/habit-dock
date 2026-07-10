@@ -7,11 +7,12 @@ export default auth((req) => {
 
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isPublicPage = pathname === "/install";
   const isPublicApi = pathname.startsWith("/api/auth");
 
   if (isPublicApi) return NextResponse.next();
 
-  if (!isLoggedIn && !isAuthPage) {
+  if (!isLoggedIn && !isAuthPage && !isPublicPage) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
@@ -25,5 +26,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons|apple-touch-icon.png).*)"],
 };
