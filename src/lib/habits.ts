@@ -505,17 +505,17 @@ export function computeWeekStatus(
 
   if (isAfter(weekStart, today)) return "default";
 
-  const weekHasEnded = isAfter(today, weekEnd);
-
-  if (!weekHasEnded) return "in_progress";
-
   const allMet = habits.every((h) =>
     isHabitWeekMet(h, weekStart, logsByHabitId.get(h.id) ?? [], today),
   );
 
-  if (!allMet) return "default";
+  // Mark as perfect as soon as quotas are met — don't wait for Sunday.
+  if (allMet) return "perfect";
 
-  return "perfect";
+  const weekHasEnded = isAfter(today, weekEnd);
+  if (!weekHasEnded) return "in_progress";
+
+  return "default";
 }
 
 export function buildGlobalMonthCalendar(

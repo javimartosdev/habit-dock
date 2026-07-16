@@ -151,14 +151,57 @@ body {
 }
 
 .calendar-week-perfect {
+  position: relative;
   background: linear-gradient(
     90deg,
-    rgba(245, 158, 11, 0.14),
-    rgba(251, 191, 36, 0.1),
-    rgba(245, 158, 11, 0.14)
+    rgba(245, 158, 11, 0.28),
+    rgba(251, 191, 36, 0.2),
+    rgba(245, 158, 11, 0.28)
   );
   border-radius: 8px;
-  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.28);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(245, 158, 11, 0.55),
+    0 0 12px rgba(245, 158, 11, 0.18);
+}
+
+.calendar-week-perfect-badge {
+  position: absolute;
+  right: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #fbbf24, #d97706);
+  color: #1c1917;
+  box-shadow: 0 1px 4px rgba(180, 83, 9, 0.45);
+  pointer-events: none;
+}
+
+@keyframes week-glow {
+  0% {
+    box-shadow:
+      inset 0 0 0 1.5px rgba(245, 158, 11, 0.55),
+      0 0 0 rgba(245, 158, 11, 0);
+  }
+  40% {
+    box-shadow:
+      inset 0 0 0 2px rgba(245, 158, 11, 0.85),
+      0 0 18px rgba(245, 158, 11, 0.45);
+  }
+  100% {
+    box-shadow:
+      inset 0 0 0 1.5px rgba(245, 158, 11, 0.55),
+      0 0 12px rgba(245, 158, 11, 0.18);
+  }
+}
+
+.animate-week-perfect {
+  animation: week-glow 0.7s ease-out;
 }
 
 @keyframes cross-off {
