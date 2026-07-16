@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
+import { format, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
 import { Check, ChevronDown, ChevronUp, Circle, Plus, Trash2, X } from "lucide-react";
 import { cn, formatDateKey, parseDateKey, WEEKDAY_PICKER } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { Button, Input } from "@/components/ui";
 import { useAchievementSound } from "@/hooks/use-achievement-sound";
 import {
   computeGlobalDayStatus,
+  computeWeekStatus,
   countTodayHabitsDone,
   isHabitLoggableOnDay,
   type HabitWithSchedule,
@@ -58,10 +59,11 @@ export function HabitDock({
   contexts: Context[];
 }) {
   const router = useRouter();
-  const playAchievement = useAchievementSound();
+  const { unlock, play: playAchievement, playTick } = useAchievementSound();
   const [month, setMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [celebrateDate, setCelebrateDate] = useState<string | null>(null);
+  const [celebrateWeek, setCelebrateWeek] = useState<string | null>(null);
   const [showHabitForm, setShowHabitForm] = useState(false);
   const [tasksExpanded, setTasksExpanded] = useState(false);
   const [taskTitle, setTaskTitle] = useState("");
@@ -110,33 +112,83 @@ export function HabitDock({
     return habitMeta.filter((h) => isHabitLoggableOnDay(h, date));
   }
 
+  function weekStatusFor(
+    dateKey: string,
+    logs: Map<string, { logDate: string; completed: boolean }[]>,
+  ) {
+    const weekStart = startOfWeek(parseDateKey(dateKey), { weekStartsOn: 1 });
+    return {
+      weekKey: formatDateKey(weekStart),
+      status: computeWeekStatus(weekStart, allHabits, logs),
+    };
+  }
+
+  function withOptimisticLog(
+    habitId: string,
+    dateKey: string,
+    completed: boolean,
+  ) {
+    const m = new Map<string, { logDate: string; completed: boolean }[]>();
+    for (const [id, logs] of logsMap) {
+      m.set(id, [...logs]);
+    }
+    const existing = m.get(habitId) ?? [];
+    const without = existing.filter((l) => l.logDate !== dateKey);
+    if (completed) {
+      m.set(habitId, [...without, { logDate: dateKey, completed: true }]);
+    } else {
+      m.set(habitId, without);
+    }
+    return m;
+  }
+
   async function toggleHabitOnDate(
     habit: HabitMeta,
     dateKey: string,
     currentlyDone: boolean,
   ) {
+    unlock();
+
     const wasOptimal = isDateOptimal(dateKey);
+    const beforeWeek = weekStatusFor(dateKey, logsMap);
+    const nextCompleted = !currentlyDone;
+    const optimisticLogs = withOptimisticLog(habit.id, dateKey, nextCompleted);
+    const afterWeek = weekStatusFor(dateKey, optimisticLogs);
+
+    // Play immediately while still in the user-gesture window (mobile Safari).
+    if (nextCompleted) {
+      const active = habitsForDate(dateKey);
+      const doneCount = active.filter((h) =>
+        h.id === habit.id ? true : isHabitDoneOnDate(h.id, dateKey),
+      ).length;
+      const becomesOptimal =
+        !wasOptimal && doneCount >= active.length && active.length > 0;
+      const becomesPerfect =
+        beforeWeek.status !== "perfect" && afterWeek.status === "perfect";
+
+      if (becomesOptimal || becomesPerfect) {
+        playAchievement();
+        if (becomesOptimal) {
+          setCelebrateDate(dateKey);
+          setTimeout(() => setCelebrateDate(null), 800);
+        }
+        if (becomesPerfect) {
+          setCelebrateWeek(afterWeek.weekKey);
+          setTimeout(() => setCelebrateWeek(null), 900);
+        }
+      } else {
+        playTick();
+      }
+    }
 
     await fetch(`/api/habits/${habit.id}/log`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         date: dateKey,
-        completed: !currentlyDone,
+        completed: nextCompleted,
       }),
     });
-
-    if (!currentlyDone && !wasOptimal) {
-      const active = habitsForDate(dateKey);
-      const doneCount = active.filter((h) =>
-        h.id === habit.id ? true : isHabitDoneOnDate(h.id, dateKey),
-      ).length;
-      if (doneCount >= active.length && active.length > 0) {
-        playAchievement();
-        setCelebrateDate(dateKey);
-        setTimeout(() => setCelebrateDate(null), 800);
-      }
-    }
 
     router.refresh();
   }
@@ -173,6 +225,10 @@ export function HabitDock({
   }
 
   async function toggleTask(task: TaskRow) {
+    unlock();
+    const completing = !task.completedAt;
+    if (completing) playTick();
+
     const action = task.completedAt ? "reopen" : "complete";
     await fetch(`/api/tasks/${task.id}`, {
       method: "PATCH",
@@ -212,6 +268,7 @@ export function HabitDock({
         habits={allHabits}
         logsByHabit={logsByHabit}
         celebrateDate={celebrateDate}
+        celebrateWeek={celebrateWeek}
         selectedDate={selectedDate}
         onDaySelect={(date) =>
           setSelectedDate((prev) => (prev === date ? null : date))

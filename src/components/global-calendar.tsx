@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { addMonths, isAfter, startOfMonth } from "date-fns";
 import { cn, DAY_LABELS } from "@/lib/utils";
 import {
@@ -118,6 +118,7 @@ export function GlobalCalendar({
   habits,
   logsByHabit,
   celebrateDate,
+  celebrateWeek,
   selectedDate,
   onDaySelect,
 }: {
@@ -126,6 +127,7 @@ export function GlobalCalendar({
   habits: HabitWithSchedule[];
   logsByHabit: Record<string, { logDate: string; completed: boolean }[]>;
   celebrateDate?: string | null;
+  celebrateWeek?: string | null;
   selectedDate?: string | null;
   onDaySelect?: (date: string) => void;
 }) {
@@ -196,10 +198,20 @@ export function GlobalCalendar({
           <div
             key={week.weekKey}
             className={cn(
-              "grid grid-cols-7 gap-1 rounded-lg p-0.5 transition-colors duration-500",
+              "relative grid grid-cols-7 gap-1 rounded-lg p-0.5 pr-5 transition-colors duration-500",
               WEEK_ROW[week.status],
+              celebrateWeek === week.weekKey && "animate-week-perfect",
             )}
           >
+            {week.status === "perfect" && (
+              <span
+                className="calendar-week-perfect-badge"
+                title="Semana perfecta"
+                aria-label="Semana perfecta"
+              >
+                <Check className="h-3 w-3" strokeWidth={3} />
+              </span>
+            )}
             {week.days.map((cell) => {
               const dayNum = cell.date.split("-")[2].replace(/^0/, "");
               return (
