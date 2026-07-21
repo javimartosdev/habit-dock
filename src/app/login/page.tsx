@@ -42,7 +42,7 @@ function LoginForm() {
     <Card className="w-full max-w-md p-8">
       <div className="mb-8 flex flex-col items-center text-center">
         <BrandLogo variant="auth" className="mb-2" />
-        <p className="text-sm text-muted">Tu suite de enfoque personal</p>
+        <p className="text-sm text-muted">Captura. Organiza. Enfócate.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -83,6 +83,11 @@ function LoginForm() {
         ¿No tienes cuenta?{" "}
         <Link href="/register" className="text-accent hover:underline">
           Crear cuenta
+        </Link>
+      </p>
+      <p className="mt-2 text-center text-sm text-muted">
+        <Link href="/forgot-password" className="text-accent hover:underline">
+          ¿Olvidaste tu contraseña?
         </Link>
       </p>
       <p className="mt-3 text-center text-sm text-muted">

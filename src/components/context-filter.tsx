@@ -46,7 +46,7 @@ export function ContextFilter({
           className={cn(
             "rounded-full px-3 py-1 text-xs font-medium transition-colors",
             selectedId === ctx.id
-              ? "text-white"
+              ? "text-accent-fg"
               : "bg-surface-hover text-muted hover:text-foreground",
           )}
           style={

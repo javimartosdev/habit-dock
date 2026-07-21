@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "Habit Dock",
-  "short_name": "Habit Dock",
-  "description": "Tu suite de enfoque personal: hábitos, tareas y estadísticas",
+  "name": "Oh-Task",
+  "short_name": "Oh-Task",
+  "description": "Captura, organiza y enfócate — tareas, calendario y hábitos",
   "lang": "es",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#8F3B20",
-  "theme_color": "#8F3B20",
+  "background_color": "#1e1e2e",
+  "theme_color": "#1e1e2e",
   "orientation": "portrait-primary",
   "icons": [
     {

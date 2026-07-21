@@ -12,6 +12,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +24,12 @@ export default function RegisterPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        inviteCode: inviteCode || undefined,
+      }),
     });
 
     if (!res.ok) {
@@ -56,7 +62,7 @@ export default function RegisterPage() {
         <div className="mb-8 flex flex-col items-center text-center">
           <BrandLogo variant="auth" className="mb-4" />
           <p className="text-sm text-muted">
-            Empieza a trackear hábitos y tareas
+            Empieza a organizar tareas y hábitos
           </p>
         </div>
 
@@ -94,6 +100,16 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               minLength={6}
               required
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium text-muted">
+              Código de invitación (opcional)
+            </label>
+            <Input
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              placeholder="Si te lo pidieron"
             />
           </div>
           {error && <p className="text-sm text-danger">{error}</p>}

@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SVG="$ROOT/public/icons/icon.svg"
-BG="#8F3B20"
+BG="#1e1e2e"
 
 render_icon() {
   local size="$1"

@@ -589,8 +589,8 @@ export function countTodayHabitsDone(
 }
 
 export const DEFAULT_CONTEXTS = [
-  { name: "General", icon: "inbox", color: "#6366f1" },
-  { name: "Estudiar", icon: "book-open", color: "#8b5cf6" },
-  { name: "Programar", icon: "code", color: "#06b6d4" },
-  { name: "Creativo", icon: "palette", color: "#f59e0b" },
+  { name: "General", icon: "inbox", color: "#89b4fa" },
+  { name: "Estudiar", icon: "book-open", color: "#cba6f7" },
+  { name: "Programar", icon: "code", color: "#94e2d5" },
+  { name: "Creativo", icon: "palette", color: "#fab387" },
 ] as const;

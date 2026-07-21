@@ -1,3 +1,3 @@
-export const THEME_STORAGE_KEY = "habit-dock-theme";
+export const THEME_STORAGE_KEY = "oh-task-theme";
 
 export type Theme = "light" | "dark";

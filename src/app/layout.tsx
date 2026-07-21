@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Habit Dock",
-  description: "Tu suite de enfoque: tareas, hábitos y estadísticas",
+  title: "Oh-Task",
+  description: "Captura, organiza y enfócate — tareas, calendario y hábitos",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -31,14 +31,14 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Habit Dock",
+    title: "Oh-Task",
   },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f6f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0b" },
+    { media: "(prefers-color-scheme: light)", color: "#eff1f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#1e1e2e" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -61,6 +61,9 @@ export default function RootLayout({
           {`(function(){try{var t=localStorage.getItem("${THEME_STORAGE_KEY}");if(t==="light"||t==="dark"){document.documentElement.classList.remove("light","dark");document.documentElement.classList.add(t);}}catch(e){}})();`}
         </Script>
         <Providers>{children}</Providers>
+        <Script id="sw-register" strategy="afterInteractive">
+          {`if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(function(){})}`}
+        </Script>
       </body>
     </html>
   );

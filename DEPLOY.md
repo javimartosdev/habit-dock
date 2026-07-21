@@ -1,4 +1,4 @@
-# Deploy — Fase 1 (Vercel + Neon)
+# Deploy — Vercel + Neon
 
 Guía para publicar Habit Dock en internet y usarla en el iPhone como PWA.
 
@@ -13,114 +13,77 @@ Guía para publicar Habit Dock en internet y usarla en el iPhone como PWA.
 ## 1. Base de datos en Neon
 
 1. Crea un proyecto en Neon (región EU si vives en España).
-2. Copia la **connection string** con SSL, formato:
-   ```
-   postgres://usuario:password@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require
-   ```
-3. En tu PC, crea un archivo temporal `.env.production.local` (no lo subas a Git):
+2. Copia la **connection string** con SSL.
+3. Guárdala en `.env.production.local` (no lo subas a Git).
+4. Sincroniza el esquema:
 
-   ```env
-   DATABASE_URL=postgres://...tu-url-de-neon...?sslmode=require
-   ```
+```bash
+cd ~/Projects/01_habit-dock
+export $(grep -v '^#' .env.production.local | xargs)
+npm run db:push
+```
 
-4. Sincroniza el esquema contra Neon:
+5. (Opcional) Código de invitación:
 
-   ```bash
-   cd ~/Projects/01_habit-dock
-   export $(grep -v '^#' .env.production.local | xargs)
-   npm run db:push
-   ```
-
-5. (Opcional) Crea tu usuario en producción registrándote en la URL de Vercel tras el deploy, o exporta datos desde local.
+```bash
+DATABASE_URL=... bash scripts/seed-invite.sh amigos
+# INVITE_ONLY=1 en Vercel si quieres cerrar el registro
+```
 
 ---
 
 ## 2. Secretos para producción
 
-Genera un `AUTH_SECRET` distinto al de local:
-
 ```bash
 openssl rand -base64 32
 ```
 
-Anota estos tres valores para Vercel:
-
-| Variable | Ejemplo |
-|----------|---------|
-| `DATABASE_URL` | URL de Neon con `?sslmode=require` |
-| `AUTH_SECRET` | Salida de `openssl rand -base64 32` |
-| `AUTH_URL` | `https://habit-dock.vercel.app` (tu URL final) |
+| Variable | Uso |
+|----------|-----|
+| `DATABASE_URL` | Neon con `?sslmode=require` |
+| `AUTH_SECRET` | Secreto de sesión |
+| `AUTH_URL` | URL pública https |
+| `INVITE_ONLY` | `1` para exigir invite |
+| `GOOGLE_*` / `OUTLOOK_*` | Sync calendarios |
+| `R2_*` | Adjuntos |
+| `STRIPE_*` | Billing Pro |
 
 ---
 
 ## 3. Deploy en Vercel
 
-### Opción A — Dashboard (recomendada)
-
-1. [vercel.com/new](https://vercel.com/new) → Import Git Repository → `habit-dock`
-2. Framework: **Next.js** (auto-detectado)
-3. **Environment Variables** → añade las 3 variables de arriba (Production)
+1. [vercel.com/new](https://vercel.com/new) → Import `habit-dock`
+2. Framework: Next.js
+3. Añade las env vars (Production)
 4. Deploy
+5. Actualiza `AUTH_URL` con la URL real y redeploy
 
-### Opción B — CLI
+CLI:
 
 ```bash
-npm i -g vercel
-cd ~/Projects/01_habit-dock
-vercel login
-vercel --prod
-# Sigue el asistente; luego añade env vars en el dashboard si faltan
+npx vercel login
+npx vercel --prod
 ```
 
-Tras el primer deploy, actualiza `AUTH_URL` en Vercel con la URL real que te asignen y redeploy.
+Webhook Stripe: `https://tu-app.vercel.app/api/billing/webhook`
 
 ---
 
-## 4. Comprobar producción
+## 4. Comprobar
 
-1. Abre `https://tu-app.vercel.app/register` y crea cuenta
-2. Marca un hábito, crea una task
-3. Entra en `/stats`
-4. Abre `/install` para ver instrucciones PWA
-
----
-
-## 5. Instalar en iPhone
-
-1. **Safari** → `https://tu-app.vercel.app`
-2. Inicia sesión
-3. **Compartir** (icono cuadrado con flecha) → **Añadir a pantalla de inicio**
-4. Abre desde el icono naranja «Habit Dock»
-
-La app necesita internet (no hay modo offline en Fase 1).
+- `/register`, hábitos, tasks (NLP: `Comprar leche mañana a las 10`)
+- `/tasks`, `/calendar`, `/focus`, `/matrix`, `/gantt`, `/stats`, `/settings`
+- `/install` → PWA en iPhone (Safari)
 
 ---
 
-## 6. Actualizar la app
+## 5. Actualizar
 
 ```bash
-git add .
-git commit -m "feat: descripción del cambio"
 git push origin main
 ```
 
-Vercel redeploya automáticamente si conectaste GitHub.
-
----
-
-## Variables de entorno — resumen
-
-```env
-# Local (.env.local)
-DATABASE_URL=postgres://studydock:studydock@localhost:5433/studydock
-AUTH_SECRET=...
-AUTH_URL=http://localhost:3000
-
-# Producción (Vercel)
-DATABASE_URL=postgres://...@neon.tech/neondb?sslmode=require
-AUTH_SECRET=...otro-secreto-distinto...
-AUTH_URL=https://habit-dock.vercel.app
-```
+Vercel redeploya si el repo está conectado.
 
 ---
 
@@ -128,17 +91,7 @@ AUTH_URL=https://habit-dock.vercel.app
 
 | Síntoma | Solución |
 |---------|----------|
-| Error 500 al login | Revisa `DATABASE_URL` y que `npm run db:push` se ejecutó en Neon |
-| Sesión no persiste | `AUTH_URL` debe coincidir exactamente con la URL pública (https) |
-| No aparece «Añadir a pantalla de inicio» | Usa Safari, no Chrome en iOS |
-| Icono genérico | Regenera: `npm run icons:generate` y redeploy |
-
----
-
-## Scripts útiles
-
-```bash
-npm run icons:generate   # Regenerar PNG desde icon.svg
-npm run db:push          # Sincronizar esquema (con DATABASE_URL activa)
-npm run build            # Probar build local antes de push
-```
+| Error 500 al login | `DATABASE_URL` + `db:push` en Neon |
+| Sesión no persiste | `AUTH_URL` = URL pública exacta |
+| Columnas nuevas faltan | `npm run db:push` otra vez |
+| PWA iPhone | Safari → Añadir a pantalla de inicio |

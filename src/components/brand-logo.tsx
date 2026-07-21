@@ -14,7 +14,7 @@ export function BrandLogo({
     return (
       <Image
         src="/icons/icon.svg"
-        alt="Habit Dock"
+        alt="Oh-Task"
         width={32}
         height={32}
         className={cn("rounded-lg shrink-0", className)}
@@ -29,14 +29,14 @@ export function BrandLogo({
         <Image
           src="/icons/icon.svg"
           alt=""
-          width={36}
-          height={36}
-          className="rounded-[10px] shrink-0 shadow-sm shadow-[#8F3B20]/25"
+          width={32}
+          height={32}
+          className="rounded-[10px] shrink-0 ring-1 ring-border/60"
           priority
           aria-hidden
         />
         <span className="text-[17px] font-semibold tracking-tight text-foreground leading-none">
-          Habit Dock
+          Oh-Task
         </span>
       </div>
     );
@@ -54,13 +54,18 @@ export function BrandLogo({
         alt=""
         width={72}
         height={72}
-        className="rounded-2xl shadow-lg shadow-[#8F3B20]/30"
+        className="rounded-2xl ring-1 ring-border/60 shadow-lg shadow-mantle/40"
         priority
         aria-hidden
       />
-      <span className="text-2xl font-semibold tracking-tight text-foreground">
-        Habit Dock
-      </span>
+      <div>
+        <span className="block text-2xl font-semibold tracking-tight text-foreground">
+          Oh-Task
+        </span>
+        <span className="mt-1 block text-sm text-muted">
+          Captura. Organiza. Enfócate.
+        </span>
+      </div>
     </div>
   );
 }

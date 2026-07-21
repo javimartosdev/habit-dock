@@ -3,6 +3,7 @@ import { Card } from "@/components/card";
 import { StreakBadge } from "@/components/streak-badge";
 import { computeStreak } from "@/lib/habits";
 import {
+  getFocusStats,
   getHabitLogsMap,
   getUserHabits,
   getUserTasks,
@@ -61,6 +62,7 @@ export default async function StatsPage() {
   const userHabits = await getUserHabits(user.id);
   const logsMap = await getHabitLogsMap(userHabits, 12);
   const openTasks = await getUserTasks(user.id);
+  const focus = await getFocusStats(user.id, 30);
 
   const today = new Date();
   const last30 = eachDayOfInterval({
@@ -77,7 +79,7 @@ export default async function StatsPage() {
         <p className="mt-1 text-muted">Tus rachas y progreso</p>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="p-5">
           <p className="text-sm text-muted">Días perfectos (30d)</p>
           <p className="mt-2 text-3xl font-semibold tabular-nums">
@@ -95,6 +97,14 @@ export default async function StatsPage() {
           <p className="mt-2 text-3xl font-semibold tabular-nums">
             {userHabits.length}
           </p>
+        </Card>
+        <Card className="p-5">
+          <p className="text-sm text-muted">Foco (30d)</p>
+          <p className="mt-2 text-3xl font-semibold tabular-nums">
+            {Math.round(focus.totalSeconds / 60)}
+            <span className="ml-1 text-base font-normal text-muted">min</span>
+          </p>
+          <p className="mt-1 text-xs text-muted">{focus.sessions} sesiones</p>
         </Card>
       </div>
 

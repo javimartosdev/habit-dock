@@ -6,9 +6,18 @@ export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   const isAuthPage =
-    pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isPublicPage = pathname === "/install";
-  const isPublicApi = pathname.startsWith("/api/auth");
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password");
+  const isPublicPage =
+    pathname === "/install" ||
+    pathname === "/offline" ||
+    pathname === "/sw.js" ||
+    pathname.startsWith("/icons");
+  const isPublicApi =
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/billing/webhook");
 
   if (isPublicApi) return NextResponse.next();
 
@@ -26,5 +35,7 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons|apple-touch-icon.png).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icons|apple-touch-icon.png|sw.js).*)",
+  ],
 };

@@ -6,31 +6,29 @@ import { contexts } from "@/db/schema";
 import { getSessionUser } from "@/lib/session";
 import { getUserContexts } from "@/lib/data";
 
-const contextSchema = z.object({
-  name: z.string().min(1).max(60),
-  icon: z.string().min(1).max(40).optional(),
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+const listSchema = z.object({
+  name: z.string().min(1).max(80),
+  icon: z.string().max(40).optional(),
+  color: z.string().max(20).optional(),
+  parentId: z.string().uuid().nullable().optional(),
+  isFolder: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
 });
 
 export async function GET() {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const rows = await getUserContexts(user.id);
-  return NextResponse.json(rows);
+  return NextResponse.json(await getUserContexts(user.id));
 }
 
 export async function POST(request: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
-  const parsed = contextSchema.safeParse(body);
+  const parsed = listSchema.safeParse(await request.json());
   if (!parsed.success) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
-
-  const existing = await getUserContexts(user.id);
 
   const [row] = await db
     .insert(contexts)
@@ -38,20 +36,42 @@ export async function POST(request: Request) {
       userId: user.id,
       name: parsed.data.name,
       icon: parsed.data.icon ?? "folder",
-      color: parsed.data.color ?? "#6366f1",
-      sortOrder: existing.length,
+      color: parsed.data.color ?? "#89b4fa",
+      parentId: parsed.data.parentId ?? null,
+      isFolder: parsed.data.isFolder ?? false,
+      sortOrder: parsed.data.sortOrder ?? 0,
     })
     .returning();
 
   return NextResponse.json(row, { status: 201 });
 }
 
+export async function PATCH(request: Request) {
+  const user = await getSessionUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const schema = listSchema.partial().extend({ id: z.string().uuid() });
+  const parsed = schema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
+  }
+
+  const { id, ...updates } = parsed.data;
+  const [row] = await db
+    .update(contexts)
+    .set(updates)
+    .where(and(eq(contexts.id, id), eq(contexts.userId, user.id)))
+    .returning();
+
+  if (!row) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(row);
+}
+
 export async function DELETE(request: Request) {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
+  const id = new URL(request.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
   await db

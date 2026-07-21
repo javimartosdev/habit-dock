@@ -3,15 +3,15 @@ import { BrandLogo } from "@/components/brand-logo";
 import { Card } from "@/components/card";
 
 export const metadata = {
-  title: "Instalar en iPhone — Habit Dock",
-  description: "Cómo añadir Habit Dock a la pantalla de inicio de tu iPhone",
+  title: "Instalar en iPhone — Oh-Task",
+  description: "Cómo añadir Oh-Task a la pantalla de inicio de tu iPhone",
 };
 
 const steps = [
   {
     n: 1,
     title: "Abre Safari",
-    body: "Entra en la URL de Habit Dock (debe ser https://). Chrome u otros navegadores en iOS no instalan PWAs igual de bien.",
+    body: "Entra en la URL de Oh-Task (debe ser https://). Chrome u otros navegadores en iOS no instalan PWAs igual de bien.",
   },
   {
     n: 2,
@@ -21,7 +21,7 @@ const steps = [
   {
     n: 3,
     title: "Compartir → Añadir a pantalla de inicio",
-    body: "Pulsa el botón Compartir (cuadrado con flecha hacia arriba) y elige «Añadir a pantalla de inicio». Confirma el nombre «Habit Dock».",
+    body: "Pulsa el botón Compartir (cuadrado con flecha hacia arriba) y elige «Añadir a pantalla de inicio». Confirma el nombre «Oh-Task».",
   },
   {
     n: 4,
@@ -39,7 +39,7 @@ export default function InstallPage() {
           Instalar en iPhone
         </h1>
         <p className="text-sm text-muted">
-          Llévate Habit Dock en el bolsillo como Progressive Web App
+          Llévate Oh-Task en el bolsillo como Progressive Web App
         </p>
       </div>
 
@@ -64,12 +64,12 @@ export default function InstallPage() {
       <div className="mt-8 flex flex-col gap-3 text-center text-sm">
         <Link
           href="/login"
-          className="rounded-xl bg-accent px-4 py-3 font-medium text-white"
+          className="rounded-xl bg-accent px-4 py-3 font-medium text-accent-fg"
         >
           Ir a iniciar sesión
         </Link>
         <Link href="/" className="text-muted hover:text-foreground">
-          Volver al Dock
+          Volver a la app
         </Link>
       </div>
     </div>

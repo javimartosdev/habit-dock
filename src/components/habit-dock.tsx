@@ -508,7 +508,7 @@ export function HabitDock({
                     className={cn(
                       "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
                       isCompleted
-                        ? "border-success bg-success text-white shadow-sm"
+                        ? "border-success bg-success text-accent-fg shadow-sm"
                         : "border-muted/60 bg-muted/10 hover:border-success hover:bg-success/15",
                     )}
                     aria-label={isCompleted ? "Reabrir tarea" : "Completar tarea"}
