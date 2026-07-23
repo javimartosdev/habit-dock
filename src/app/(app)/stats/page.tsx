@@ -142,6 +142,7 @@ export default async function StatsPage() {
                 <StreakBadge
                   current={streak.current}
                   longest={streak.longest}
+                  unit={streak.unit}
                 />
                 <p className="mt-4 text-sm text-muted">
                   Cumplimiento 30d:{" "}

@@ -222,31 +222,99 @@ export function computeStreak(
   habit: HabitSchedule,
   logs: { logDate: string; completed: boolean }[],
   today: Date = new Date(),
+): { current: number; longest: number; unit: "days" | "weeks" } {
+  if (habit.kind === "weekly_quota" && habit.weeklyTarget) {
+    return {
+      ...computeWeeklyStreak(habit.weeklyTarget, logs, today),
+      unit: "weeks",
+    };
+  }
+
+  return { ...computeDailyStreak(habit, logs, today), unit: "days" };
+}
+
+function countCompletionsInWeek(
+  logs: { logDate: string; completed: boolean }[],
+  weekStart: Date,
+): number {
+  const completed = getCompletedMap(logs);
+  const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+  let count = 0;
+  for (const day of eachDayOfInterval({ start: weekStart, end: weekEnd })) {
+    if (completed.has(formatDateKey(day))) count++;
+  }
+  return count;
+}
+
+/** Consecutive weeks where weekly quota was met. Current open week doesn't break the streak. */
+function computeWeeklyStreak(
+  weeklyTarget: number,
+  logs: { logDate: string; completed: boolean }[],
+  today: Date,
+): { current: number; longest: number } {
+  const rangeStart = startOfWeek(addDays(today, -365), { weekStartsOn: 1 });
+  const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+
+  const weeks: {
+    met: boolean;
+    isCurrent: boolean;
+    hasEnded: boolean;
+  }[] = [];
+
+  for (
+    let cursor = rangeStart;
+    !isAfter(cursor, thisWeekStart);
+    cursor = addDays(cursor, 7)
+  ) {
+    const weekEnd = endOfWeek(cursor, { weekStartsOn: 1 });
+    const met = countCompletionsInWeek(logs, cursor) >= weeklyTarget;
+    const isCurrent = isSameDay(cursor, thisWeekStart);
+    const hasEnded = isAfter(today, weekEnd);
+    weeks.push({ met, isCurrent, hasEnded });
+  }
+
+  let current = 0;
+  for (let i = weeks.length - 1; i >= 0; i--) {
+    const week = weeks[i];
+    // Week still in progress and not yet met → don't break ongoing streak.
+    if (week.isCurrent && !week.met) continue;
+    if (week.met) {
+      current++;
+    } else {
+      break;
+    }
+  }
+
+  let longest = 0;
+  let run = 0;
+  for (const week of weeks) {
+    if (week.isCurrent && !week.met) continue;
+    if (week.met) {
+      run++;
+      longest = Math.max(longest, run);
+    } else if (week.hasEnded) {
+      run = 0;
+    }
+  }
+
+  return { current, longest };
+}
+
+function computeDailyStreak(
+  habit: HabitSchedule,
+  logs: { logDate: string; completed: boolean }[],
+  today: Date,
 ): { current: number; longest: number } {
   const start = addDays(today, -365);
-  const statusMap =
-    habit.kind === "weekly_quota" && habit.weeklyTarget
-      ? computeWeeklyStatuses(
-          habit.scheduleDays,
-          habit.weeklyTarget,
-          logs,
-          start,
-          today,
-          today,
-        )
-      : computeDailyStatuses(
-          habit.scheduleDays,
-          logs,
-          start,
-          today,
-          today,
-        );
+  const statusMap = computeDailyStatuses(
+    habit.scheduleDays,
+    logs,
+    start,
+    today,
+    today,
+  );
 
-  const successStatuses = new Set<DayStatus>([
-    "done",
-    "recovered",
-    "week_success",
-  ]);
+  const successStatuses = new Set<DayStatus>(["done", "recovered"]);
 
   const days = eachDayOfInterval({ start, end: today })
     .filter((d) => habit.scheduleDays.includes(d.getDay()))

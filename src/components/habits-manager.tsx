@@ -60,7 +60,7 @@ export function HabitsManager({
   }, [selected, month, logsByHabit]);
 
   const streak = useMemo(() => {
-    if (!selected) return { current: 0, longest: 0 };
+    if (!selected) return { current: 0, longest: 0, unit: "days" as const };
     return computeStreak(
       {
         kind: selected.kind,
@@ -226,6 +226,7 @@ export function HabitsManager({
                   <StreakBadge
                     current={streak.current}
                     longest={streak.longest}
+                    unit={streak.unit}
                   />
                 </div>
 
