@@ -4,7 +4,7 @@ import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
-import { Check, ChevronDown, ChevronUp, Circle, Plus, Trash2, X } from "lucide-react";
+import { Check, Circle, Plus, Trash2, X } from "lucide-react";
 import { cn, formatDateKey, parseDateKey, WEEKDAY_PICKER } from "@/lib/utils";
 import { GlobalCalendar } from "@/components/global-calendar";
 import { Button, Input } from "@/components/ui";
@@ -27,36 +27,16 @@ interface HabitToday extends HabitMeta {
   completedToday: boolean;
 }
 
-interface TaskRow {
-  id: string;
-  title: string;
-  contextName: string | null;
-  contextColor: string | null;
-  completedAt: string | Date | null;
-}
-
-interface Context {
-  id: string;
-  name: string;
-  color: string;
-}
-
-const TASKS_VISIBLE = 5;
-
 export function HabitDock({
   habits,
   habitMeta,
   allHabits,
   logsByHabit,
-  tasks,
-  contexts,
 }: {
   habits: HabitToday[];
   habitMeta: HabitMeta[];
   allHabits: HabitWithSchedule[];
   logsByHabit: Record<string, { logDate: string; completed: boolean }[]>;
-  tasks: TaskRow[];
-  contexts: Context[];
 }) {
   const router = useRouter();
   const { unlock, play: playAchievement, playTick } = useAchievementSound();
@@ -65,9 +45,6 @@ export function HabitDock({
   const [celebrateDate, setCelebrateDate] = useState<string | null>(null);
   const [celebrateWeek, setCelebrateWeek] = useState<string | null>(null);
   const [showHabitForm, setShowHabitForm] = useState(false);
-  const [tasksExpanded, setTasksExpanded] = useState(false);
-  const [taskTitle, setTaskTitle] = useState("");
-  const [taskContext, setTaskContext] = useState("");
 
   const [name, setName] = useState("");
   const [kind, setKind] = useState<"daily" | "weekly_quota">("weekly_quota");
@@ -81,14 +58,6 @@ export function HabitDock({
     }
     return m;
   }, [logsByHabit]);
-
-  const pendingTasks = tasks.filter((t) => !t.completedAt);
-  const completedTasks = tasks.filter((t) => t.completedAt);
-  const visiblePending = tasksExpanded
-    ? pendingTasks
-    : pendingTasks.slice(0, TASKS_VISIBLE);
-  const visibleTasks = [...visiblePending, ...completedTasks];
-  const hiddenCount = Math.max(0, pendingTasks.length - TASKS_VISIBLE);
 
   function toggleDay(dow: number) {
     setScheduleDays((prev) =>
@@ -155,7 +124,6 @@ export function HabitDock({
     const optimisticLogs = withOptimisticLog(habit.id, dateKey, nextCompleted);
     const afterWeek = weekStatusFor(dateKey, optimisticLogs);
 
-    // Play immediately while still in the user-gesture window (mobile Safari).
     if (nextCompleted) {
       const active = habitsForDate(dateKey);
       const doneCount = active.filter((h) =>
@@ -224,35 +192,6 @@ export function HabitDock({
     router.refresh();
   }
 
-  async function toggleTask(task: TaskRow) {
-    unlock();
-    const completing = !task.completedAt;
-    if (completing) playTick();
-
-    const action = task.completedAt ? "reopen" : "complete";
-    await fetch(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action }),
-    });
-    router.refresh();
-  }
-
-  async function addTask(e: FormEvent) {
-    e.preventDefault();
-    if (!taskTitle.trim()) return;
-    await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: taskTitle.trim(),
-        contextId: taskContext || null,
-      }),
-    });
-    setTaskTitle("");
-    router.refresh();
-  }
-
   const { done, total } = countTodayHabitsDone(allHabits, logsMap);
 
   const selectedHabits = selectedDate ? habitsForDate(selectedDate) : [];
@@ -299,22 +238,22 @@ export function HabitDock({
           ) : (
             <div className="flex flex-wrap gap-2">
               {selectedHabits.map((habit) => {
-                const done = isHabitDoneOnDate(habit.id, selectedDate);
+                const dayDone = isHabitDoneOnDate(habit.id, selectedDate);
                 return (
                   <button
                     key={habit.id}
                     type="button"
                     onClick={() =>
-                      toggleHabitOnDate(habit, selectedDate, done)
+                      toggleHabitOnDate(habit, selectedDate, dayDone)
                     }
                     className={cn(
                       "flex items-center gap-2 rounded-full border px-3 py-2 text-sm transition-all duration-200",
-                      done
+                      dayDone
                         ? "border-success/40 bg-success/15 text-success"
                         : "border-border bg-surface hover:border-accent/30",
                     )}
                   >
-                    {done ? (
+                    {dayDone ? (
                       <Check className="h-4 w-4" />
                     ) : (
                       <Circle className="h-4 w-4 text-muted" />
@@ -462,101 +401,6 @@ export function HabitDock({
               Crear hábito
             </Button>
           </form>
-        )}
-      </section>
-
-      <section className="space-y-3 border-t border-border pt-6">
-        <h2 className="text-sm font-medium text-muted">Tasks</h2>
-
-        <form onSubmit={addTask} className="flex gap-2">
-          <Input
-            value={taskTitle}
-            onChange={(e) => setTaskTitle(e.target.value)}
-            placeholder="Añadir tarea…"
-            className="flex-1"
-          />
-          <select
-            value={taskContext}
-            onChange={(e) => setTaskContext(e.target.value)}
-            className="h-10 rounded-xl border border-border bg-surface px-2 text-xs"
-          >
-            <option value="">—</option>
-            {contexts.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </form>
-
-        {tasks.length === 0 ? (
-          <p className="text-sm text-muted/70">Nada pendiente</p>
-        ) : (
-          <ul className="space-y-1">
-            {visibleTasks.map((task) => {
-              const isCompleted = !!task.completedAt;
-              return (
-                <li
-                  key={task.id}
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-2 py-2 transition-colors",
-                    !isCompleted && "hover:bg-surface-hover/50",
-                  )}
-                >
-                  <button
-                    onClick={() => toggleTask(task)}
-                    className={cn(
-                      "flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors",
-                      isCompleted
-                        ? "border-success bg-success text-white shadow-sm"
-                        : "border-muted/60 bg-muted/10 hover:border-success hover:bg-success/15",
-                    )}
-                    aria-label={isCompleted ? "Reabrir tarea" : "Completar tarea"}
-                  >
-                    {isCompleted && <Check className="h-3 w-3 stroke-[3]" />}
-                  </button>
-                  <span
-                    className={cn(
-                      "flex-1 text-sm",
-                      isCompleted && "text-muted/80 line-through",
-                    )}
-                  >
-                    {task.title}
-                  </span>
-                  {task.contextName && (
-                    <span
-                      className={cn(
-                        "text-[10px] font-medium opacity-70",
-                        isCompleted && "line-through",
-                      )}
-                      style={{ color: task.contextColor ?? undefined }}
-                    >
-                      {task.contextName}
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-
-        {hiddenCount > 0 && !tasksExpanded && (
-          <button
-            onClick={() => setTasksExpanded(true)}
-            className="flex items-center gap-1 text-xs text-muted hover:text-foreground"
-          >
-            <ChevronDown className="h-3 w-3" />
-            Ver {hiddenCount} más
-          </button>
-        )}
-        {tasksExpanded && pendingTasks.length > TASKS_VISIBLE && (
-          <button
-            onClick={() => setTasksExpanded(false)}
-            className="flex items-center gap-1 text-xs text-muted hover:text-foreground"
-          >
-            <ChevronUp className="h-3 w-3" />
-            Colapsar
-          </button>
         )}
       </section>
     </div>

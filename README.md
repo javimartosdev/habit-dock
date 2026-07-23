@@ -1,6 +1,6 @@
 # Habit Dock
 
-Tu suite de enfoque personal: tareas, hábitos con calendario Seinfeld y estadísticas.
+Tu calendario de hábitos estilo Seinfeld: rachas, cuotas semanales y estadísticas.
 
 ## Requisitos
 
@@ -33,13 +33,13 @@ Abre [http://localhost:3000](http://localhost:3000), crea una cuenta y empieza.
 
 ## Funcionalidades
 
-- **Dock** — Vista de enfoque: hábitos de hoy + tasks filtrables por contexto
-- **Tasks** — Lista de pendientes con contextos personalizables
+- **Dock** — Calendario global + hábitos de hoy en una sola pantalla
 - **Hábitos** — Calendario mensual estilo Seinfeld con:
   - Días activos configurables (ej. entrenar Lun–Vie)
   - Recuperación automática de 1 día fallido
-  - Modo cuota semanal (ej. 5 entrenamientos/semana)
-- **Stats** — Rachas, cumplimiento 30d, días perfectos
+  - Modo cuota semanal (ej. 5 días/semana, no tienen que ser seguidos)
+  - Semana perfecta al cumplir la meta (sin esperar al domingo)
+- **Stats** — Rachas (días o semanas), progreso de la semana, cumplimiento
 - **Multi-usuario** — Cada cuenta tiene sus datos aislados
 - **PWA** — Instalable desde el navegador
 

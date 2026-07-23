@@ -1,9 +1,7 @@
 import {
   getHabitLogsMap,
   getTodayHabitsWithStatus,
-  getUserContexts,
   getUserHabits,
-  getUserTasks,
 } from "@/lib/data";
 import { getSessionUser } from "@/lib/session";
 import { HabitDock } from "@/components/habit-dock";
@@ -23,11 +21,7 @@ export default async function HomePage() {
     logsByHabit[habit.id] = logsMap.get(habit.id) ?? [];
   }
 
-  const [habitsToday, tasks, contexts] = await Promise.all([
-    getTodayHabitsWithStatus(user.id),
-    getUserTasks(user.id, null, { includeCompleted: true }),
-    getUserContexts(user.id),
-  ]);
+  const habitsToday = await getTodayHabitsWithStatus(user.id);
 
   const allHabits = userHabits.map((h) => ({
     id: h.id,
@@ -57,8 +51,6 @@ export default async function HomePage() {
       }))}
       allHabits={allHabits}
       logsByHabit={logsByHabit}
-      tasks={tasks}
-      contexts={contexts}
     />
   );
 }

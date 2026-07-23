@@ -656,6 +656,208 @@ export function countTodayHabitsDone(
   return { done, total: active.length };
 }
 
+export type WeekOutcome = {
+  weekKey: string;
+  done: number;
+  target: number;
+  met: boolean;
+  isCurrent: boolean;
+  hasEnded: boolean;
+};
+
+function weekTargetForHabit(habit: HabitWithSchedule, weekStart: Date): number {
+  if (habit.kind === "weekly_quota" && habit.weeklyTarget) {
+    return habit.weeklyTarget;
+  }
+  const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+  return eachDayOfInterval({ start: weekStart, end: weekEnd }).filter((d) =>
+    habit.scheduleDays.includes(d.getDay()),
+  ).length;
+}
+
+function weekDoneForHabit(
+  habit: HabitWithSchedule,
+  logs: { logDate: string; completed: boolean }[],
+  weekStart: Date,
+  today: Date,
+): number {
+  if (habit.kind === "weekly_quota" && habit.weeklyTarget) {
+    return countCompletionsInWeek(logs, weekStart);
+  }
+
+  const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+  return eachDayOfInterval({ start: weekStart, end: weekEnd }).filter((d) => {
+    if (isAfter(d, today)) return false;
+    if (!habit.scheduleDays.includes(d.getDay())) return false;
+    const status = isHabitSuccessfulOnDay(habit, d, logs, today);
+    return status === "done" || status === "recovered";
+  }).length;
+}
+
+/** Progress for the open week (Mon–Sun). */
+export function getCurrentWeekProgress(
+  habit: HabitWithSchedule,
+  logs: { logDate: string; completed: boolean }[],
+  today: Date = new Date(),
+): { done: number; target: number; met: boolean } {
+  const weekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const target = weekTargetForHabit(habit, weekStart);
+  const done = weekDoneForHabit(habit, logs, weekStart, today);
+  return { done, target, met: target > 0 && done >= target };
+}
+
+/** Recent weeks newest-last (left→right chronological for sparks). */
+export function getRecentWeekOutcomes(
+  habit: HabitWithSchedule,
+  logs: { logDate: string; completed: boolean }[],
+  weekCount: number = 8,
+  today: Date = new Date(),
+): WeekOutcome[] {
+  const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const outcomes: WeekOutcome[] = [];
+
+  for (let i = weekCount - 1; i >= 0; i--) {
+    const weekStart = addDays(thisWeekStart, -7 * i);
+    const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+    const target = weekTargetForHabit(habit, weekStart);
+    const done = weekDoneForHabit(habit, logs, weekStart, today);
+    const isCurrent = isSameDay(weekStart, thisWeekStart);
+    const hasEnded = isAfter(today, weekEnd);
+    const met = target > 0 && done >= target;
+    outcomes.push({
+      weekKey: formatDateKey(weekStart),
+      done,
+      target,
+      met,
+      isCurrent,
+      hasEnded,
+    });
+  }
+
+  return outcomes;
+}
+
+/**
+ * Compliance over ~lookbackDays:
+ * - weekly_quota: % of closed weeks that met the target
+ * - daily: % of scheduled past days done/recovered
+ */
+export function computeHabitComplianceRate(
+  habit: HabitWithSchedule,
+  logs: { logDate: string; completed: boolean }[],
+  today: Date = new Date(),
+  lookbackDays: number = 30,
+): number {
+  if (habit.kind === "weekly_quota" && habit.weeklyTarget) {
+    const rangeStart = startOfWeek(addDays(today, -(lookbackDays - 1)), {
+      weekStartsOn: 1,
+    });
+    const thisWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+    let closed = 0;
+    let met = 0;
+
+    for (
+      let cursor = rangeStart;
+      isBefore(cursor, thisWeekStart) || isSameDay(cursor, thisWeekStart);
+      cursor = addDays(cursor, 7)
+    ) {
+      const weekEnd = endOfWeek(cursor, { weekStartsOn: 1 });
+      const isCurrent = isSameDay(cursor, thisWeekStart);
+      const hasEnded = isAfter(today, weekEnd);
+      if (isCurrent && !hasEnded) continue;
+      if (!hasEnded && !isCurrent) continue;
+
+      closed++;
+      if (countCompletionsInWeek(logs, cursor) >= habit.weeklyTarget) met++;
+    }
+
+    return closed > 0 ? Math.round((met / closed) * 100) : 0;
+  }
+
+  const start = addDays(today, -(lookbackDays - 1));
+  const days = eachDayOfInterval({ start, end: today }).filter((d) =>
+    habit.scheduleDays.includes(d.getDay()),
+  );
+  if (days.length === 0) return 0;
+
+  const success = days.filter((d) => {
+    const status = isHabitSuccessfulOnDay(habit, d, logs, today);
+    return status === "done" || status === "recovered";
+  }).length;
+
+  return Math.round((success / days.length) * 100);
+}
+
+export function countOptimalDaysInRange(
+  habits: HabitWithSchedule[],
+  logsByHabitId: Map<string, { logDate: string; completed: boolean }[]>,
+  days: Date[],
+  today: Date = new Date(),
+): number {
+  let count = 0;
+  for (const day of days) {
+    if (isAfter(day, today)) continue;
+    if (computeGlobalDayStatus(day, habits, logsByHabitId, today) === "optimal") {
+      count++;
+    }
+  }
+  return count;
+}
+
+export function countPerfectWeeksInRange(
+  habits: HabitWithSchedule[],
+  logsByHabitId: Map<string, { logDate: string; completed: boolean }[]>,
+  rangeStart: Date,
+  rangeEnd: Date,
+  today: Date = new Date(),
+): number {
+  if (habits.length === 0) return 0;
+
+  const first = startOfWeek(rangeStart, { weekStartsOn: 1 });
+  const last = startOfWeek(rangeEnd, { weekStartsOn: 1 });
+  let count = 0;
+
+  for (
+    let cursor = first;
+    !isAfter(cursor, last);
+    cursor = addDays(cursor, 7)
+  ) {
+    if (computeWeekStatus(cursor, habits, logsByHabitId, today) === "perfect") {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+export function rankHabitsByCompliance(
+  habits: Array<HabitWithSchedule & { id: string; name: string }>,
+  logsByHabitId: Map<string, { logDate: string; completed: boolean }[]>,
+  today: Date = new Date(),
+): {
+  best: { id: string; name: string; rate: number } | null;
+  worst: { id: string; name: string; rate: number } | null;
+} {
+  if (habits.length === 0) return { best: null, worst: null };
+
+  const ranked = habits
+    .map((h) => ({
+      id: h.id,
+      name: h.name,
+      rate: computeHabitComplianceRate(
+        h,
+        logsByHabitId.get(h.id) ?? [],
+        today,
+      ),
+    }))
+    .sort((a, b) => b.rate - a.rate);
+
+  return {
+    best: ranked[0] ?? null,
+    worst: ranked[ranked.length - 1] ?? null,
+  };
+}
+
 export const DEFAULT_CONTEXTS = [
   { name: "General", icon: "inbox", color: "#6366f1" },
   { name: "Estudiar", icon: "book-open", color: "#8b5cf6" },
