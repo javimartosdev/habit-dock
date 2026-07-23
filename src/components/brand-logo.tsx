@@ -35,7 +35,7 @@ export function BrandLogo({
           priority
           aria-hidden
         />
-        <span className="text-[17px] font-semibold tracking-tight text-foreground leading-none">
+        <span className="font-display text-[18px] font-semibold tracking-tight text-foreground leading-none">
           Habit Dock
         </span>
       </div>
@@ -58,7 +58,7 @@ export function BrandLogo({
         priority
         aria-hidden
       />
-      <span className="text-2xl font-semibold tracking-tight text-foreground">
+      <span className="font-display text-2xl font-semibold tracking-tight text-foreground">
         Habit Dock
       </span>
     </div>

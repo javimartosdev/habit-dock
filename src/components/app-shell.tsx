@@ -19,13 +19,13 @@ export function AppShell({
 
   return (
     <div className="min-h-full flex flex-col bg-background">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
-        <div className="mx-auto flex h-12 max-w-2xl items-center justify-between px-4">
+      <header className="sticky top-0 z-40 border-b border-border/50 bg-background/75 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
             {isStats ? (
               <Link
                 href="/"
-                className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors -ml-2"
+                className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors -ml-2"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Dock
@@ -39,7 +39,7 @@ export function AppShell({
             {!isStats && (
               <Link
                 href="/stats"
-                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
               >
                 <BarChart3 className="h-3.5 w-3.5" />
                 Stats
@@ -47,7 +47,7 @@ export function AppShell({
             )}
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
+              className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-xs text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
               title={`Salir (${userName})`}
             >
               <LogOut className="h-3.5 w-3.5" />
@@ -55,7 +55,7 @@ export function AppShell({
           </div>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-5">
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
         {children}
       </main>
     </div>

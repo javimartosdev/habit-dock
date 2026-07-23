@@ -42,7 +42,7 @@ function LoginForm() {
     <Card className="w-full max-w-md p-8">
       <div className="mb-8 flex flex-col items-center text-center">
         <BrandLogo variant="auth" className="mb-2" />
-        <p className="text-sm text-muted">Tu suite de enfoque personal</p>
+        <p className="text-sm text-muted">Calendario de hábitos, sin culpa</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

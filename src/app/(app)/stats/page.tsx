@@ -107,7 +107,9 @@ export default async function StatsPage() {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-semibold tracking-tight">Estadísticas</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">
+          Estadísticas
+        </h1>
         <p className="mt-1 text-muted">Rachas, semanas y progreso de hábitos</p>
       </header>
 
@@ -157,7 +159,9 @@ export default async function StatsPage() {
 
       {userHabits.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-medium">Esta semana</h2>
+          <h2 className="font-display text-lg font-semibold tracking-tight">
+            Esta semana
+          </h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {userHabits.map((habit) => {
               const logs = logsByHabitId.get(habit.id) ?? [];
@@ -217,7 +221,9 @@ export default async function StatsPage() {
       )}
 
       <section className="space-y-4">
-        <h2 className="text-lg font-medium">Por hábito</h2>
+        <h2 className="font-display text-lg font-semibold tracking-tight">
+          Por hábito
+        </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {userHabits.map((habit) => {
             const logs = logsByHabitId.get(habit.id) ?? [];

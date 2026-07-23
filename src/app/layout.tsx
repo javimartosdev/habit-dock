@@ -1,23 +1,28 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Figtree, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const display = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = Figtree({
+  variable: "--font-body",
+  subsets: ["latin"],
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
   title: "Habit Dock",
-  description: "Tu suite de enfoque: tareas, hábitos y estadísticas",
+  description: "Calendario de hábitos estilo Seinfeld: rachas, cuotas y estadísticas",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -37,8 +42,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f6f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0b" },
+    { media: "(prefers-color-scheme: light)", color: "#e8e4dc" },
+    { media: "(prefers-color-scheme: dark)", color: "#161311" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -53,7 +58,7 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${geistSans.variable} ${geistMono.variable} h-full dark antialiased`}
+      className={`${display.variable} ${body.variable} ${mono.variable} h-full dark antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col font-sans">
