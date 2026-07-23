@@ -79,8 +79,8 @@ Tras el primer deploy, actualiza `AUTH_URL` en Vercel con la URL real que te asi
 ## 4. Comprobar producción
 
 1. Abre `https://tu-app.vercel.app/register` y crea cuenta
-2. Marca un hábito, crea una task
-3. Entra en `/stats`
+2. Marca hábitos en el Dock y toca días del calendario
+3. Entra en `/stats` (rachas, semana actual, cumplimiento)
 4. Abre `/install` para ver instrucciones PWA
 
 ---
