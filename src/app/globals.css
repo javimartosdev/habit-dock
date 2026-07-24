@@ -166,6 +166,15 @@ body {
   box-shadow: inset 0 0 12px rgba(180, 83, 42, 0.08);
 }
 
+.dark .calendar-day-partial {
+  background: rgba(224, 122, 74, 0.32);
+  border-color: rgba(224, 122, 74, 0.55);
+  color: #f3c4a8;
+  box-shadow:
+    inset 0 0 0 1px rgba(224, 122, 74, 0.35),
+    inset 0 0 14px rgba(224, 122, 74, 0.18);
+}
+
 .calendar-day-optimal {
   background: rgba(61, 122, 74, 0.16);
   border-color: rgba(61, 122, 74, 0.32);
@@ -173,6 +182,8 @@ body {
 }
 
 .dark .calendar-day-optimal {
+  background: rgba(107, 191, 122, 0.22);
+  border-color: rgba(107, 191, 122, 0.45);
   color: #b6e0c0;
 }
 
@@ -191,15 +202,31 @@ body {
   border-color: rgba(61, 122, 74, 0.16);
 }
 
+.dark .calendar-day-recovered {
+  background: rgba(107, 191, 122, 0.12);
+  border-color: rgba(107, 191, 122, 0.25);
+  color: #9fd4ab;
+}
+
 .calendar-day-recovered line {
   stroke: #3d7a4a;
   opacity: 0.5;
   stroke-dasharray: 4 3;
 }
 
+.dark .calendar-day-recovered line {
+  stroke: #6bbf7a;
+}
+
 .calendar-day-missed {
   background: rgba(179, 58, 46, 0.07);
   color: #9a9088;
+}
+
+.dark .calendar-day-missed {
+  background: rgba(224, 106, 92, 0.14);
+  color: #c4b8ae;
+  border-color: rgba(224, 106, 92, 0.2);
 }
 
 .calendar-day-missed line {
