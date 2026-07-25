@@ -74,11 +74,54 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Datos inválidos" }, { status: 400 });
   }
 
-  const { id, ...updates } = parsed.data;
+  const { id, ...raw } = parsed.data;
+
+  const [existing] = await db
+    .select()
+    .from(habits)
+    .where(and(eq(habits.id, id), eq(habits.userId, user.id)))
+    .limit(1);
+
+  if (!existing) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const kind = raw.kind ?? existing.kind;
+  const weeklyTarget =
+    kind === "weekly_quota"
+      ? (raw.weeklyTarget !== undefined
+          ? raw.weeklyTarget
+          : existing.weeklyTarget)
+      : null;
+
+  if (kind === "weekly_quota" && !weeklyTarget) {
+    return NextResponse.json(
+      { error: "weeklyTarget requerido para hábitos semanales" },
+      { status: 400 },
+    );
+  }
+
+  const scheduleDays =
+    kind === "weekly_quota"
+      ? [0, 1, 2, 3, 4, 5, 6]
+      : (raw.scheduleDays ?? existing.scheduleDays);
+
+  if (kind === "daily" && scheduleDays.length === 0) {
+    return NextResponse.json(
+      { error: "Elige al menos un día activo" },
+      { status: 400 },
+    );
+  }
 
   const [row] = await db
     .update(habits)
-    .set(updates)
+    .set({
+      ...(raw.name !== undefined ? { name: raw.name } : {}),
+      ...(raw.color !== undefined ? { color: raw.color } : {}),
+      kind,
+      weeklyTarget,
+      scheduleDays,
+    })
     .where(and(eq(habits.id, id), eq(habits.userId, user.id)))
     .returning();
 
