@@ -89,6 +89,10 @@ function LoginForm() {
         <Link href="/install" className="text-accent hover:underline">
           Instalar en iPhone
         </Link>
+        {" · "}
+        <Link href="/privacy" className="text-accent hover:underline">
+          Privacidad
+        </Link>
       </p>
     </Card>
   );

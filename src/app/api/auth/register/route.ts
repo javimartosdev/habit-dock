@@ -3,8 +3,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { contexts, users } from "@/db/schema";
-import { DEFAULT_CONTEXTS } from "@/lib/habits";
+import { users } from "@/db/schema";
 
 const registerSchema = z.object({
   name: z.string().min(2).max(80),
@@ -41,24 +40,11 @@ export async function POST(request: Request) {
 
     const passwordHash = await bcrypt.hash(parsed.data.password, 12);
 
-    const [user] = await db
-      .insert(users)
-      .values({
-        name: parsed.data.name,
-        email,
-        passwordHash,
-      })
-      .returning({ id: users.id });
-
-    await db.insert(contexts).values(
-      DEFAULT_CONTEXTS.map((ctx, index) => ({
-        userId: user.id,
-        name: ctx.name,
-        icon: ctx.icon,
-        color: ctx.color,
-        sortOrder: index,
-      })),
-    );
+    await db.insert(users).values({
+      name: parsed.data.name,
+      email,
+      passwordHash,
+    });
 
     return NextResponse.json({ ok: true });
   } catch {

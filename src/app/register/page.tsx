@@ -56,7 +56,7 @@ export default function RegisterPage() {
         <div className="mb-8 flex flex-col items-center text-center">
           <BrandLogo variant="auth" className="mb-4" />
           <p className="text-sm text-muted">
-            Empieza a trackear hábitos y tareas
+            Empieza a trackear tus hábitos
           </p>
         </div>
 

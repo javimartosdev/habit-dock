@@ -1,61 +1,7 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { db } from "@/db";
-import {
-  contexts,
-  habitLogs,
-  habits,
-  tasks,
-  type Habit,
-  type HabitLog,
-} from "@/db/schema";
+import { habitLogs, habits, type Habit, type HabitLog } from "@/db/schema";
 import { formatDateKey } from "@/lib/utils";
-
-export async function getUserContexts(userId: string) {
-  return db
-    .select()
-    .from(contexts)
-    .where(eq(contexts.userId, userId))
-    .orderBy(asc(contexts.sortOrder));
-}
-
-export async function getUserTasks(
-  userId: string,
-  contextId?: string | null,
-  options?: { includeCompleted?: boolean },
-) {
-  const conditions = [eq(tasks.userId, userId)];
-
-  if (!options?.includeCompleted) {
-    conditions.push(isNull(tasks.completedAt));
-  }
-
-  if (contextId) {
-    conditions.push(eq(tasks.contextId, contextId));
-  }
-
-  return db
-    .select({
-      id: tasks.id,
-      title: tasks.title,
-      priority: tasks.priority,
-      dueDate: tasks.dueDate,
-      contextId: tasks.contextId,
-      contextName: contexts.name,
-      contextColor: contexts.color,
-      createdAt: tasks.createdAt,
-      completedAt: tasks.completedAt,
-    })
-    .from(tasks)
-    .leftJoin(contexts, eq(tasks.contextId, contexts.id))
-    .where(and(...conditions))
-    .orderBy(
-      sql`case when ${tasks.completedAt} is null then 0 else 1 end`,
-      desc(tasks.priority),
-      asc(tasks.dueDate),
-      asc(tasks.completedAt),
-      desc(tasks.createdAt),
-    );
-}
 
 export async function getUserHabits(userId: string) {
   return db
@@ -82,6 +28,16 @@ export async function getHabitLogsForRange(
         lte(habitLogs.logDate, to),
       ),
     );
+}
+
+export async function getAllHabitLogs(habitIds: string[]) {
+  if (habitIds.length === 0) return [] as HabitLog[];
+
+  return db
+    .select()
+    .from(habitLogs)
+    .where(inArray(habitLogs.habitId, habitIds))
+    .orderBy(asc(habitLogs.logDate));
 }
 
 export async function getHabitLogsMap(
@@ -117,8 +73,8 @@ export async function getTodayHabitsWithStatus(userId: string) {
   const todayKey = formatDateKey(today);
   const dayOfWeek = today.getDay();
 
-  const activeToday = userHabits.filter((h) =>
-    h.kind === "weekly_quota" || h.scheduleDays.includes(dayOfWeek),
+  const activeToday = userHabits.filter(
+    (h) => h.kind === "weekly_quota" || h.scheduleDays.includes(dayOfWeek),
   );
 
   const logs = await getHabitLogsForRange(
@@ -135,36 +91,4 @@ export async function getTodayHabitsWithStatus(userId: string) {
       logId: log?.id,
     };
   });
-}
-
-export async function getDockTasks(userId: string, contextId?: string | null) {
-  const todayKey = formatDateKey(new Date());
-
-  const conditions = [
-    eq(tasks.userId, userId),
-    isNull(tasks.completedAt),
-    or(isNull(tasks.dueDate), lte(tasks.dueDate, todayKey)),
-  ];
-
-  if (contextId) {
-    conditions.push(eq(tasks.contextId, contextId));
-  }
-
-  const rows = await db
-    .select({
-      id: tasks.id,
-      title: tasks.title,
-      priority: tasks.priority,
-      dueDate: tasks.dueDate,
-      contextId: tasks.contextId,
-      contextName: contexts.name,
-      contextColor: contexts.color,
-    })
-    .from(tasks)
-    .leftJoin(contexts, eq(tasks.contextId, contexts.id))
-    .where(and(...conditions))
-    .orderBy(desc(tasks.priority), asc(tasks.dueDate))
-    .limit(12);
-
-  return rows;
 }

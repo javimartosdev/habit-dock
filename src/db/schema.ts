@@ -22,37 +22,6 @@ export const users = pgTable("users", {
     .notNull(),
 });
 
-export const contexts = pgTable("contexts", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  icon: text("icon").notNull().default("folder"),
-  color: text("color").notNull().default("#6366f1"),
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
-export const tasks = pgTable("tasks", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  contextId: uuid("context_id").references(() => contexts.id, {
-    onDelete: "set null",
-  }),
-  title: text("title").notNull(),
-  priority: integer("priority").notNull().default(0),
-  dueDate: date("due_date"),
-  completedAt: timestamp("completed_at", { withTimezone: true }),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .defaultNow()
-    .notNull(),
-});
-
 export const habits = pgTable("habits", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")
@@ -89,7 +58,5 @@ export const habitLogs = pgTable(
 );
 
 export type User = typeof users.$inferSelect;
-export type Context = typeof contexts.$inferSelect;
-export type Task = typeof tasks.$inferSelect;
 export type Habit = typeof habits.$inferSelect;
 export type HabitLog = typeof habitLogs.$inferSelect;

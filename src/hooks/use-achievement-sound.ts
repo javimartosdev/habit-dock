@@ -75,7 +75,7 @@ export function useAchievementSound() {
     playNotes([523.25, 659.25, 783.99, 1046.5], 0.07, 0.28, 0.45);
   }, [playNotes]);
 
-  /** Short confirmation when completing a habit or task. */
+  /** Short confirmation when completing a habit. */
   const playTick = useCallback(() => {
     playNotes([880, 1174.66], 0.05, 0.22, 0.22);
   }, [playNotes]);

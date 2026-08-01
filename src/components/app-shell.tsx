@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, ChevronLeft, LogOut } from "lucide-react";
+import { BarChart3, ChevronLeft, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { BrandLogo } from "@/components/brand-logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -15,14 +15,14 @@ export function AppShell({
   userName: string;
 }) {
   const pathname = usePathname();
-  const isStats = pathname === "/stats";
+  const showBack = pathname === "/stats" || pathname === "/settings";
 
   return (
     <div className="min-h-full flex flex-col bg-background">
       <header className="sticky top-0 z-40 border-b border-border/50 bg-background/75 backdrop-blur-xl pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
-            {isStats ? (
+            {showBack ? (
               <Link
                 href="/"
                 className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors -ml-2"
@@ -36,14 +36,25 @@ export function AppShell({
           </div>
           <div className="flex items-center gap-0.5">
             <ThemeToggle />
-            {!isStats && (
-              <Link
-                href="/stats"
-                className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
-              >
-                <BarChart3 className="h-3.5 w-3.5" />
-                Stats
-              </Link>
+            {!showBack && (
+              <>
+                <Link
+                  href="/stats"
+                  className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
+                  aria-label="Stats"
+                >
+                  <BarChart3 className="h-3.5 w-3.5" />
+                  Stats
+                </Link>
+                <Link
+                  href="/settings"
+                  className="rounded-xl p-2 text-muted hover:bg-surface-hover hover:text-foreground transition-colors"
+                  aria-label="Cuenta"
+                  title="Cuenta"
+                >
+                  <Settings className="h-3.5 w-3.5" />
+                </Link>
+              </>
             )}
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}

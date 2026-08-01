@@ -142,3 +142,8 @@ npm run icons:generate   # Regenerar PNG desde icon.svg
 npm run db:push          # Sincronizar esquema (con DATABASE_URL activa)
 npm run build            # Probar build local antes de push
 ```
+
+Si Neon aún tiene tablas `tasks` / `contexts` (legado Oh-Task), puedes dropearlas con
+`scripts/drop-tasks-contexts.sql` contra la DB de producción, o dejar que
+`drizzle-kit push` las elimine al sincronizar (confirma el prompt de data-loss).
+

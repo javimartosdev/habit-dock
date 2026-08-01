@@ -7,7 +7,8 @@ export default auth((req) => {
 
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/register");
-  const isPublicPage = pathname === "/install";
+  const isPublicPage =
+    pathname === "/install" || pathname === "/privacy";
   const isPublicApi = pathname.startsWith("/api/auth");
 
   if (isPublicApi) return NextResponse.next();

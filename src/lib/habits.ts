@@ -857,10 +857,3 @@ export function rankHabitsByCompliance(
     worst: ranked[ranked.length - 1] ?? null,
   };
 }
-
-export const DEFAULT_CONTEXTS = [
-  { name: "General", icon: "inbox", color: "#6366f1" },
-  { name: "Estudiar", icon: "book-open", color: "#8b5cf6" },
-  { name: "Programar", icon: "code", color: "#06b6d4" },
-  { name: "Creativo", icon: "palette", color: "#f59e0b" },
-] as const;

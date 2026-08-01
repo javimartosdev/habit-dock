@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Habit Dock",
   "short_name": "Habit Dock",
-  "description": "Tu suite de enfoque personal: hábitos, tareas y estadísticas",
+  "description": "Calendario de hábitos estilo Seinfeld: rachas, cuotas y estadísticas",
   "lang": "es",
   "start_url": "/",
   "scope": "/",
