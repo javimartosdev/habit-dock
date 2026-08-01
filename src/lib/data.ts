@@ -57,38 +57,12 @@ export async function getHabitLogsMap(
 
   const map = new Map<string, { logDate: string; completed: boolean }[]>();
   for (const habit of userHabits) {
-    map.set(
-      habit.id,
-      logs
-        .filter((l) => l.habitId === habit.id)
-        .map((l) => ({ logDate: l.logDate, completed: l.completed })),
-    );
+    map.set(habit.id, []);
+  }
+  for (const log of logs) {
+    const list = map.get(log.habitId);
+    if (!list) continue;
+    list.push({ logDate: log.logDate, completed: log.completed });
   }
   return map;
-}
-
-export async function getTodayHabitsWithStatus(userId: string) {
-  const userHabits = await getUserHabits(userId);
-  const today = new Date();
-  const todayKey = formatDateKey(today);
-  const dayOfWeek = today.getDay();
-
-  const activeToday = userHabits.filter(
-    (h) => h.kind === "weekly_quota" || h.scheduleDays.includes(dayOfWeek),
-  );
-
-  const logs = await getHabitLogsForRange(
-    activeToday.map((h) => h.id),
-    todayKey,
-    todayKey,
-  );
-
-  return activeToday.map((habit) => {
-    const log = logs.find((l) => l.habitId === habit.id);
-    return {
-      ...habit,
-      completedToday: log?.completed ?? false,
-      logId: log?.id,
-    };
-  });
 }

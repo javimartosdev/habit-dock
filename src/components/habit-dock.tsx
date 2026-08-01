@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format, startOfWeek } from "date-fns";
 import { es } from "date-fns/locale";
@@ -30,13 +30,12 @@ const HABIT_COLORS = [
   "#8a5a3c",
 ];
 
+type LogEntry = { logDate: string; completed: boolean };
+type LogsByHabit = Record<string, LogEntry[]>;
+
 interface HabitMeta extends HabitWithSchedule {
   name: string;
   color: string;
-}
-
-interface HabitToday extends HabitMeta {
-  completedToday: boolean;
 }
 
 function nearestColor(hex: string): string {
@@ -45,16 +44,38 @@ function nearestColor(hex: string): string {
   return HABIT_COLORS[0];
 }
 
+function patchLogs(
+  prev: LogsByHabit,
+  habitId: string,
+  dateKey: string,
+  completed: boolean,
+): LogsByHabit {
+  const existing = prev[habitId] ?? [];
+  const without = existing.filter((l) => l.logDate !== dateKey);
+  return {
+    ...prev,
+    [habitId]: completed
+      ? [...without, { logDate: dateKey, completed: true }]
+      : without,
+  };
+}
+
+function toLogsMap(logs: LogsByHabit) {
+  const m = new Map<string, LogEntry[]>();
+  for (const [id, entries] of Object.entries(logs)) {
+    m.set(id, entries);
+  }
+  return m;
+}
+
 export function HabitDock({
-  habits,
   habitMeta,
   allHabits,
   logsByHabit,
 }: {
-  habits: HabitToday[];
   habitMeta: HabitMeta[];
   allHabits: HabitWithSchedule[];
-  logsByHabit: Record<string, { logDate: string; completed: boolean }[]>;
+  logsByHabit: LogsByHabit;
 }) {
   const router = useRouter();
   const { unlock, play: playAchievement, playTick } = useAchievementSound();
@@ -66,6 +87,7 @@ export function HabitDock({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [localLogs, setLocalLogs] = useState<LogsByHabit>(logsByHabit);
 
   const [name, setName] = useState("");
   const [kind, setKind] = useState<"daily" | "weekly_quota">("weekly_quota");
@@ -73,19 +95,12 @@ export function HabitDock({
   const [scheduleDays, setScheduleDays] = useState<number[]>([...ALL_WEEK_DAYS]);
   const [color, setColor] = useState(HABIT_COLORS[0]);
 
-  const logsMap = useMemo(() => {
-    const m = new Map<string, { logDate: string; completed: boolean }[]>();
-    for (const [id, logs] of Object.entries(logsByHabit)) {
-      m.set(id, logs);
-    }
-    return m;
+  useEffect(() => {
+    setLocalLogs(logsByHabit);
   }, [logsByHabit]);
 
-  const todayById = useMemo(() => {
-    const m = new Map<string, HabitToday>();
-    for (const h of habits) m.set(h.id, h);
-    return m;
-  }, [habits]);
+  const logsMap = useMemo(() => toLogsMap(localLogs), [localLogs]);
+  const todayKey = formatDateKey(new Date());
 
   function resetForm() {
     setName("");
@@ -129,14 +144,17 @@ export function HabitDock({
   }
 
   function isHabitDoneOnDate(habitId: string, dateKey: string): boolean {
-    return (logsByHabit[habitId] ?? []).some(
+    return (localLogs[habitId] ?? []).some(
       (l) => l.logDate === dateKey && l.completed,
     );
   }
 
-  function isDateOptimal(dateKey: string): boolean {
+  function isDateOptimal(
+    dateKey: string,
+    logs: Map<string, LogEntry[]>,
+  ): boolean {
     const date = parseDateKey(dateKey);
-    return computeGlobalDayStatus(date, allHabits, logsMap) === "optimal";
+    return computeGlobalDayStatus(date, allHabits, logs) === "optimal";
   }
 
   function habitsForDate(dateKey: string): HabitMeta[] {
@@ -146,7 +164,7 @@ export function HabitDock({
 
   function weekStatusFor(
     dateKey: string,
-    logs: Map<string, { logDate: string; completed: boolean }[]>,
+    logs: Map<string, LogEntry[]>,
   ) {
     const weekStart = startOfWeek(parseDateKey(dateKey), { weekStartsOn: 1 });
     return {
@@ -155,42 +173,31 @@ export function HabitDock({
     };
   }
 
-  function withOptimisticLog(
-    habitId: string,
-    dateKey: string,
-    completed: boolean,
-  ) {
-    const m = new Map<string, { logDate: string; completed: boolean }[]>();
-    for (const [id, logs] of logsMap) {
-      m.set(id, [...logs]);
-    }
-    const existing = m.get(habitId) ?? [];
-    const without = existing.filter((l) => l.logDate !== dateKey);
-    if (completed) {
-      m.set(habitId, [...without, { logDate: dateKey, completed: true }]);
-    } else {
-      m.set(habitId, without);
-    }
-    return m;
-  }
-
-  async function toggleHabitOnDate(
+  function toggleHabitOnDate(
     habit: HabitMeta,
     dateKey: string,
     currentlyDone: boolean,
   ) {
     unlock();
 
-    const wasOptimal = isDateOptimal(dateKey);
-    const beforeWeek = weekStatusFor(dateKey, logsMap);
     const nextCompleted = !currentlyDone;
-    const optimisticLogs = withOptimisticLog(habit.id, dateKey, nextCompleted);
-    const afterWeek = weekStatusFor(dateKey, optimisticLogs);
+    const optimistic = patchLogs(localLogs, habit.id, dateKey, nextCompleted);
+    const optimisticMap = toLogsMap(optimistic);
+
+    const wasOptimal = isDateOptimal(dateKey, logsMap);
+    const beforeWeek = weekStatusFor(dateKey, logsMap);
+    const afterWeek = weekStatusFor(dateKey, optimisticMap);
+
+    setLocalLogs(optimistic);
 
     if (nextCompleted) {
       const active = habitsForDate(dateKey);
       const doneCount = active.filter((h) =>
-        h.id === habit.id ? true : isHabitDoneOnDate(h.id, dateKey),
+        h.id === habit.id
+          ? true
+          : (optimistic[h.id] ?? []).some(
+              (l) => l.logDate === dateKey && l.completed,
+            ),
       ).length;
       const becomesOptimal =
         !wasOptimal && doneCount >= active.length && active.length > 0;
@@ -212,21 +219,28 @@ export function HabitDock({
       }
     }
 
-    await fetch(`/api/habits/${habit.id}/log`, {
+    void fetch(`/api/habits/${habit.id}/log`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         date: dateKey,
         completed: nextCompleted,
       }),
+    }).then((res) => {
+      if (!res.ok) {
+        setLocalLogs((prev) =>
+          patchLogs(prev, habit.id, dateKey, currentlyDone),
+        );
+      }
+    }).catch(() => {
+      setLocalLogs((prev) =>
+        patchLogs(prev, habit.id, dateKey, currentlyDone),
+      );
     });
-
-    router.refresh();
   }
 
-  async function toggleHabit(habit: HabitToday) {
-    const todayKey = formatDateKey(new Date());
-    await toggleHabitOnDate(habit, todayKey, habit.completedToday);
+  function toggleHabit(habit: HabitMeta) {
+    toggleHabitOnDate(habit, todayKey, isHabitDoneOnDate(habit.id, todayKey));
   }
 
   async function saveHabit(e: FormEvent) {
@@ -303,7 +317,7 @@ export function HabitDock({
         month={month}
         onMonthChange={setMonth}
         habits={allHabits}
-        logsByHabit={logsByHabit}
+        logsByHabit={localLogs}
         celebrateDate={celebrateDate}
         celebrateWeek={celebrateWeek}
         selectedDate={selectedDate}
@@ -397,12 +411,11 @@ export function HabitDock({
         {habitMeta.length > 0 && (
           <div className="space-y-2">
             {habitMeta.map((habit) => {
-              const todayHabit = todayById.get(habit.id);
-              const completedToday = todayHabit?.completedToday ?? false;
               const canToggleToday = isHabitLoggableOnDay(habit, new Date());
+              const completedToday = isHabitDoneOnDate(habit.id, todayKey);
               const week = getCurrentWeekProgress(
                 habit,
-                logsByHabit[habit.id] ?? [],
+                localLogs[habit.id] ?? [],
               );
 
               return (
@@ -419,7 +432,7 @@ export function HabitDock({
                       type="button"
                       disabled={!canToggleToday}
                       onClick={() => {
-                        if (todayHabit) void toggleHabit(todayHabit);
+                        if (canToggleToday) toggleHabit(habit);
                       }}
                       className={cn(
                         "flex flex-1 items-center gap-3 rounded-xl px-1.5 py-1.5 text-left active:scale-[0.99]",

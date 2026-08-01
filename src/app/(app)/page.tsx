@@ -1,8 +1,4 @@
-import {
-  getHabitLogsMap,
-  getTodayHabitsWithStatus,
-  getUserHabits,
-} from "@/lib/data";
+import { getHabitLogsMap, getUserHabits } from "@/lib/data";
 import { getSessionUser } from "@/lib/session";
 import { HabitDock } from "@/components/habit-dock";
 
@@ -11,7 +7,7 @@ export default async function HomePage() {
   if (!user) return null;
 
   const userHabits = await getUserHabits(user.id);
-  const logsMap = await getHabitLogsMap(userHabits, 24);
+  const logsMap = await getHabitLogsMap(userHabits, 14);
 
   const logsByHabit: Record<
     string,
@@ -20,8 +16,6 @@ export default async function HomePage() {
   for (const habit of userHabits) {
     logsByHabit[habit.id] = logsMap.get(habit.id) ?? [];
   }
-
-  const habitsToday = await getTodayHabitsWithStatus(user.id);
 
   const allHabits = userHabits.map((h) => ({
     id: h.id,
@@ -32,15 +26,6 @@ export default async function HomePage() {
 
   return (
     <HabitDock
-      habits={habitsToday.map((h) => ({
-        id: h.id,
-        name: h.name,
-        color: h.color,
-        kind: h.kind,
-        scheduleDays: h.scheduleDays,
-        weeklyTarget: h.weeklyTarget,
-        completedToday: h.completedToday,
-      }))}
       habitMeta={userHabits.map((h) => ({
         id: h.id,
         name: h.name,
