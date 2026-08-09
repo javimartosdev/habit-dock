@@ -17,16 +17,11 @@ export function RanksPanel() {
     void refresh(true);
   }, [refresh]);
 
-  const currentThreshold =
-    rank != null ? RANK_THRESHOLDS[rank.rankIndex] : 0;
   const nextThreshold =
     rank?.nextRankIndex != null
       ? RANK_THRESHOLDS[rank.nextRankIndex]
       : null;
-  const span =
-    nextThreshold != null
-      ? Math.max(1, nextThreshold - currentThreshold)
-      : 1;
+  // Match the "pts / next" label: fill is absolute progress to the next rank.
   const progressPct =
     rank == null
       ? 0
@@ -34,7 +29,7 @@ export function RanksPanel() {
         ? 100
         : Math.min(
             100,
-            Math.max(0, ((rank.points - currentThreshold) / span) * 100),
+            Math.max(0, (rank.points / Math.max(1, nextThreshold)) * 100),
           );
 
   return (
@@ -90,7 +85,7 @@ export function RanksPanel() {
             aria-label="Progreso hacia el siguiente rango"
           >
             <div
-              className="h-full rounded-full bg-accent/75 transition-[width] duration-500 ease-out"
+              className="h-full min-w-0 rounded-full bg-accent transition-[width] duration-500 ease-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>
