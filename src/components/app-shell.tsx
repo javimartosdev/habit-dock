@@ -16,7 +16,10 @@ export function AppShell({
   userName: string;
 }) {
   const pathname = usePathname();
-  const showBack = pathname === "/stats" || pathname === "/settings";
+  const showBack =
+    pathname === "/stats" ||
+    pathname === "/settings" ||
+    pathname === "/ranks";
 
   return (
     <div className="min-h-full flex flex-col bg-background">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { rankIconSrc } from "@/lib/ranks";
+import { RankIcon } from "@/components/rank-icon";
 
 export function RankLevelUp({
   rankIndex,
@@ -23,13 +23,7 @@ export function RankLevelUp({
       aria-label="Has subido de rango"
     >
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-border/80 bg-surface-elevated/95 px-8 py-7 shadow-lg shadow-black/10 animate-rank-pop">
-        <img
-          src={rankIconSrc(rankIndex)}
-          alt=""
-          width={56}
-          height={56}
-          className="h-14 w-14 image-pixelated drop-shadow-sm"
-        />
+        <RankIcon rankIndex={rankIndex} size="xl" className="drop-shadow-sm" />
         <p className="font-display text-lg font-semibold tracking-tight text-foreground">
           Has subido de rango
         </p>

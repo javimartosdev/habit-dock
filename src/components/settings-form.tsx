@@ -1,15 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { signOut } from "next-auth/react";
 import { Download } from "lucide-react";
 import { Button, Input } from "@/components/ui";
-import { useRank } from "@/components/rank-provider";
-import {
-  POINTS_OPTIMAL_DAY,
-  POINTS_PERFECT_WEEK,
-  rankIconSrc,
-} from "@/lib/ranks";
 
 export function SettingsForm({
   email,
@@ -18,7 +12,6 @@ export function SettingsForm({
   email: string;
   name: string;
 }) {
-  const { rank, refresh } = useRank();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState("");
@@ -28,10 +21,6 @@ export function SettingsForm({
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    void refresh(true);
-  }, [refresh]);
 
   async function changePassword(e: FormEvent) {
     e.preventDefault();
@@ -94,77 +83,6 @@ export function SettingsForm({
           {email ? ` · ${email}` : ""}
         </p>
       </div>
-
-      <section id="rangos" className="space-y-3 scroll-mt-24">
-        <h2 className="font-display text-base font-semibold tracking-tight">
-          Rangos
-        </h2>
-        {rank && (
-          <div className="flex items-center gap-3 rounded-2xl border border-border/70 bg-surface-elevated/80 px-3.5 py-3">
-            <img
-              src={rank.iconSrc}
-              alt=""
-              width={40}
-              height={40}
-              className="h-10 w-10 image-pixelated"
-            />
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground">
-                Rango {rank.rankIndex}
-              </p>
-              <p className="text-xs text-muted">
-                {rank.points.toLocaleString("es-ES")} pts
-                {rank.pointsToNext != null
-                  ? ` · ${rank.pointsToNext.toLocaleString("es-ES")} para el siguiente`
-                  : " · rango máximo"}
-              </p>
-            </div>
-          </div>
-        )}
-        <div className="space-y-2 text-sm text-muted leading-relaxed">
-          <p>
-            Un toque de progreso a largo plazo. Solo sube; fallar una semana no
-            te baja de rango.
-          </p>
-          <ul className="list-disc pl-5 space-y-1">
-            <li>
-              <span className="text-foreground font-medium">
-                Día completo
-              </span>{" "}
-              (todos los hábitos del día): +{POINTS_OPTIMAL_DAY} pts
-            </li>
-            <li>
-              <span className="text-foreground font-medium">
-                Semana perfecta
-              </span>{" "}
-              (todas las metas cumplidas): +{POINTS_PERFECT_WEEK} pts extra
-            </li>
-            <li>
-              El primer día completo te lleva del pollito al martillo (rango 1)
-            </li>
-            <li>Cada rango siguiente pide más puntos acumulados</li>
-          </ul>
-        </div>
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {Array.from({ length: 26 }, (_, i) => (
-            <img
-              key={i}
-              src={rankIconSrc(i)}
-              alt={`Rango ${i}`}
-              title={`Rango ${i}`}
-              width={28}
-              height={28}
-              className={`h-7 w-7 image-pixelated rounded-sm ${
-                rank && i === rank.rankIndex
-                  ? "ring-2 ring-accent/50 ring-offset-1 ring-offset-background"
-                  : i > (rank?.rankIndex ?? 0)
-                    ? "opacity-35"
-                    : "opacity-90"
-              }`}
-            />
-          ))}
-        </div>
-      </section>
 
       <section className="space-y-3">
         <h2 className="font-display text-base font-semibold tracking-tight">

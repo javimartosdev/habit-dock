@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRank } from "@/components/rank-provider";
+import { RankIcon } from "@/components/rank-icon";
 
 export function RankBadge() {
   const { rank } = useRank();
@@ -14,18 +15,12 @@ export function RankBadge() {
 
   return (
     <Link
-      href="/settings#rangos"
+      href="/ranks"
       title={title}
       aria-label={title}
-      className="flex items-center rounded-lg p-0.5 hover:bg-surface-hover transition-colors"
+      className="flex items-center rounded-lg px-1 py-0.5 hover:bg-surface-hover transition-colors"
     >
-      <img
-        src={rank.iconSrc}
-        alt=""
-        width={22}
-        height={22}
-        className="h-[22px] w-[22px] image-pixelated"
-      />
+      <RankIcon src={rank.iconSrc} size="sm" />
     </Link>
   );
 }
