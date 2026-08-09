@@ -3,6 +3,8 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { habitLogs, habits } from "@/db/schema";
+import { evaluateRankAwardsForDate } from "@/lib/rank-progress";
+import { rankIconSrc } from "@/lib/ranks";
 import { getSessionUser } from "@/lib/session";
 import { formatDateKey } from "@/lib/utils";
 
@@ -46,25 +48,44 @@ export async function POST(
     )
     .limit(1);
 
+  let row;
+  let status = 200;
+
   if (existing) {
-    const [row] = await db
+    [row] = await db
       .update(habitLogs)
       .set({ completed: parsed.data.completed })
       .where(eq(habitLogs.id, existing.id))
       .returning();
-    return NextResponse.json(row);
+  } else {
+    [row] = await db
+      .insert(habitLogs)
+      .values({
+        habitId,
+        logDate,
+        completed: parsed.data.completed,
+      })
+      .returning();
+    status = 201;
   }
 
-  const [row] = await db
-    .insert(habitLogs)
-    .values({
-      habitId,
-      logDate,
-      completed: parsed.data.completed,
-    })
-    .returning();
+  const rank = await evaluateRankAwardsForDate(user.id, logDate);
 
-  return NextResponse.json(row, { status: 201 });
+  return NextResponse.json(
+    {
+      ...row,
+      rank: {
+        points: rank.points,
+        rankIndex: rank.rankIndex,
+        previousRankIndex: rank.previousRankIndex,
+        leveledUp: rank.leveledUp,
+        nextRankIndex: rank.nextRankIndex,
+        pointsToNext: rank.pointsToNext,
+        iconSrc: rankIconSrc(rank.rankIndex),
+      },
+    },
+    { status },
+  );
 }
 
 export async function GET(

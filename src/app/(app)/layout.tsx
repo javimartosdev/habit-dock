@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
+import { RankProvider } from "@/components/rank-provider";
 import { getSessionUser } from "@/lib/session";
 
 export default async function AppLayout({
@@ -11,6 +12,8 @@ export default async function AppLayout({
   if (!user) redirect("/login");
 
   return (
-    <AppShell userName={user.name ?? "Usuario"}>{children}</AppShell>
+    <RankProvider>
+      <AppShell userName={user.name ?? "Usuario"}>{children}</AppShell>
+    </RankProvider>
   );
 }

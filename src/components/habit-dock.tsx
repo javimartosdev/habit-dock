@@ -8,6 +8,7 @@ import { Check, Circle, Pencil, Plus, Trash2, X } from "lucide-react";
 import { cn, formatDateKey, parseDateKey, WEEKDAY_PICKER } from "@/lib/utils";
 import { GlobalCalendar } from "@/components/global-calendar";
 import { Button, Input } from "@/components/ui";
+import { useRank } from "@/components/rank-provider";
 import { useAchievementSound } from "@/hooks/use-achievement-sound";
 import {
   computeGlobalDayStatus,
@@ -78,6 +79,7 @@ export function HabitDock({
   logsByHabit: LogsByHabit;
 }) {
   const router = useRouter();
+  const { applyRankUpdate } = useRank();
   const { unlock, play: playAchievement, playTick } = useAchievementSound();
   const [month, setMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -226,17 +228,31 @@ export function HabitDock({
         date: dateKey,
         completed: nextCompleted,
       }),
-    }).then((res) => {
-      if (!res.ok) {
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          setLocalLogs((prev) =>
+            patchLogs(prev, habit.id, dateKey, currentlyDone),
+          );
+          return;
+        }
+        const data = (await res.json().catch(() => null)) as {
+          rank?: {
+            points: number;
+            rankIndex: number;
+            leveledUp?: boolean;
+            nextRankIndex?: number | null;
+            pointsToNext?: number | null;
+            iconSrc?: string;
+          };
+        } | null;
+        if (data?.rank) applyRankUpdate(data.rank);
+      })
+      .catch(() => {
         setLocalLogs((prev) =>
           patchLogs(prev, habit.id, dateKey, currentlyDone),
         );
-      }
-    }).catch(() => {
-      setLocalLogs((prev) =>
-        patchLogs(prev, habit.id, dateKey, currentlyDone),
-      );
-    });
+      });
   }
 
   function toggleHabit(habit: HabitMeta) {

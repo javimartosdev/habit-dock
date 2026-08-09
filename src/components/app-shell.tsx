@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { BarChart3, ChevronLeft, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { BrandLogo } from "@/components/brand-logo";
+import { RankBadge } from "@/components/rank-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppShell({
@@ -23,15 +24,21 @@ export function AppShell({
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
             {showBack ? (
-              <Link
-                href="/"
-                className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors -ml-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Dock
-              </Link>
+              <div className="flex items-center gap-2 -ml-2">
+                <Link
+                  href="/"
+                  className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Dock
+                </Link>
+                <RankBadge />
+              </div>
             ) : (
-              <BrandLogo variant="header" />
+              <div className="flex items-center gap-2">
+                <BrandLogo variant="header" />
+                <RankBadge />
+              </div>
             )}
           </div>
           <div className="flex items-center gap-0.5">

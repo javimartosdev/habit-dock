@@ -6,6 +6,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -17,6 +18,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   passwordHash: text("password_hash").notNull(),
+  rankPoints: integer("rank_points").notNull().default(0),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -57,6 +59,26 @@ export const habitLogs = pgTable(
   ],
 );
 
+/** Idempotent point grants — points only go up; keys never removed. */
+export const rankAwards = pgTable(
+  "rank_awards",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    awardKey: text("award_key").notNull(),
+    points: integer("points").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("rank_awards_user_key").on(table.userId, table.awardKey),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Habit = typeof habits.$inferSelect;
 export type HabitLog = typeof habitLogs.$inferSelect;
+export type RankAward = typeof rankAwards.$inferSelect;

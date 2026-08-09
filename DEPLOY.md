@@ -147,3 +147,9 @@ Si Neon aún tiene tablas `tasks` / `contexts` (legado Oh-Task), puedes dropearl
 `scripts/drop-tasks-contexts.sql` contra la DB de producción, o dejar que
 `drizzle-kit push` las elimine al sincronizar (confirma el prompt de data-loss).
 
+Tras el deploy de rangos, aplica en Neon (si `db:push` no basta):
+
+```bash
+psql "$DATABASE_URL" < scripts/add-rank-progress.sql
+```
+
