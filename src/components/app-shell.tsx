@@ -27,24 +27,19 @@ export function AppShell({
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
             {showBack ? (
-              <div className="flex items-center gap-2 -ml-2">
-                <Link
-                  href="/"
-                  className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Dock
-                </Link>
-                <RankBadge />
-              </div>
+              <Link
+                href="/"
+                className="flex items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground hover:bg-surface-hover transition-colors -ml-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Dock
+              </Link>
             ) : (
-              <div className="flex items-center gap-2">
-                <BrandLogo variant="header" />
-                <RankBadge />
-              </div>
+              <BrandLogo variant="header" />
             )}
           </div>
           <div className="flex items-center gap-0.5">
+            <RankBadge />
             <ThemeToggle />
             {!showBack && (
               <>
